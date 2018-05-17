@@ -1,8 +1,8 @@
 {
- "Data":"data",
- "Dimensions": ["Channels", "Time", "Trials"],
- "PropertyNames":["chanlocs","times", "epoch"],
- "Level1": "Time",
- "Level2": "Trials", 
+ "Data": ["C_post","C_pre"],
+ "Dimensions": ["ROIs", "ROIs"],
+ "PropertyNames":["ROIs", "ROIs"],
+ "Level1": NaN,
+ "Level2": NaN, 
  "VariableNames":["comments"] 
 }
