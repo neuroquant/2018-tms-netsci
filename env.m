@@ -1,0 +1,1 @@
+setenv('ELECTROME_DIR',fullfile(getenv('SCRATCH'),'Electrome'))
