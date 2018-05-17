@@ -1,0 +1,8 @@
+{
+ "Data":"data",
+ "Dimensions": ["Channels", "Time", "Trials"],
+ "PropertyNames":["chanlocs","times", "epoch"],
+ "Level1": "Time",
+ "Level2": "Trials", 
+ "VariableNames":["comments"] 
+}

@@ -1,0 +1,52 @@
+{
+    "SubjectID": 202,
+    "Treatment": "STDP",
+    "Pre_Post": "Pre",
+    "nConditions": 6,     
+    "Conditions": [   
+             {"name": "LICI_100_pMFG_IPL",
+             "type": "LICI", 
+             "interval": 100, 
+             "target1": "pMFG",
+             "target2": "IPL"
+             }, 
+             {"name": "LICI_100_IPL_pMFG",
+             "type": "LICI", 
+             "interval": 100, 
+             "target1": "IPL",
+             "target2": "pMFG"
+             },
+             {"name": "LICI_200_pMFG_IPL", 
+             "type": "LICI", 
+             "interval": 200, 
+             "target1": "pMFG",
+             "target2": "IPL"
+             }, 
+             {"name": "LICI_200_IPL_pMFG",
+             "type": "LICI", 
+             "interval": 200, 
+             "target1": "IPL",
+             "target2": "pMFG"
+             },
+             {"name": "spTMS_IPL",
+             "type": "spTMS", 
+             "interval": 0, 
+             "target1": "IPL",
+             "target2": ""
+             },
+             {"name": "spTMS_pMFG",
+             "type": "spTMS", 
+             "interval": 0, 
+             "target1": "pMFG",
+             "target2": ""
+             }
+        ], 
+    "FileNames": [
+        "LICI_100_pre_pMFG_IPL_fromConcat_LICI_100_pMFG_IPL.mat",
+        "LICI_100_pre_IPL_pMFG_fromConcat_LICI_100_IPL_pMFG.mat",
+        "LICI_200_pre_pMFG_IPL_fromConcat_LICI_200_pMFG_IPL.mat",
+        "LICI_200_pre_IPL_pMFG_fromConcat_LICI_200_IPL_pMFG.mat",
+        "spTMS_pre_IPL_fromConcat_spTMS_IPL.mat",
+        "spTMS_pre_pMFG_fromConcat_spTMS_pMFG.mat"
+    ]
+}
