@@ -9,6 +9,7 @@ BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PROJECT_NAME = 2018-tms-netsci
 PYTHON_INTERPRETER = python3
+XCORR_DIR := Electrome/xcorr_networks
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -53,6 +54,11 @@ ifeq (default,$(PROFILE))
 else
 	aws s3 sync s3://$(BUCKET)/data/ data/ --profile $(PROFILE)
 endif
+
+## Download Data from Google Drive
+sync_data_from_gdrive:
+	mkdir -p ${SCRATCH}/${XCORR_DIR}
+	rclone sync drive:Data/${XCORR_DIR} ${SCRATCH}/${XCORR_DIR} 
 
 ## Set up python interpreter environment
 create_environment:
