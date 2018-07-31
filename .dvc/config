@@ -1,0 +1,4 @@
+[core]
+remote = oak-tms-netsci-data
+['remote "oak-tms-netsci-data"']
+url = /oak/stanford/groups/aetkin/manjarin/2018-tms-netsci/data
