@@ -9,7 +9,7 @@ function [Shat tmsShat] = cc_fmri_tms_common_models()
     mkdir(SAVEDIR);
     ggm_results = struct();
     
-    tms_filenames = dir(fullfile(SAVEDIR,'*.mat'));
+    tms_filenames = dir(fullfile(SAVEDIR,'*ggms*.mat'));
     tms_filenames = {tms_filenames.name};
     nconditions = length(tms_filenames);
 
