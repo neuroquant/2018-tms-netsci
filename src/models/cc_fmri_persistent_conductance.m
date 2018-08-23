@@ -1,4 +1,4 @@
-function resampled = cc_fmri_persistent_conductance()
+function metrics = cc_fmri_persistent_conductance()
 
     add_paths()
     
@@ -6,7 +6,7 @@ function resampled = cc_fmri_persistent_conductance()
                     'tms-fMRI/CC/roitimeseries/'];
     %DATADIR = fullfile('data','interim','CC','roitimeseries');                
     
-    methodname = 'corr';
+    methodname = 'kernelcorr';
     use_partial_correlation = false;
     if(use_partial_correlation)
         SAVEDIR=fullfile(DATADIR,'ggms',['networktype_' methodname],'partialcorr_conductance');
@@ -15,7 +15,7 @@ function resampled = cc_fmri_persistent_conductance()
     end
     mkdir(SAVEDIR);
     
-    tms_filenames = dir(fullfile(DATADIR,'ggms',['networktype_' methodname],'*.mat'));
+    tms_filenames = dir(fullfile(DATADIR,'ggms',['networktype_' methodname],'*ggms*.mat'));
     tms_filenames = {tms_filenames.name};
     nconditions = length(tms_filenames);
     
@@ -23,15 +23,17 @@ function resampled = cc_fmri_persistent_conductance()
     community = readtable('Schaefer200_Yeo7_labels.csv');
     Ci = community.communityno;
     
-    
-    for conditionNo=2:nconditions
+    resampled = {};
+    for conditionNo=1:nconditions
         warning off
         tms_filename = fullfile(DATADIR, 'ggms',['networktype_' methodname], ...
                         tms_filenames{conditionNo});
         data = load(tms_filename);
     
-        Pi = data.stability_graphs(:,:,end);
-        graphs = data.graphs;
+        if(isfield(data,'stability_graphs'))
+            Pi = data.stability_graphs(:,:,end);
+        end
+        graphs = data.Shat;
         % figure;
         % imagesc(A);
         % axis image off;
@@ -72,9 +74,7 @@ function resampled = cc_fmri_persistent_conductance()
         create_matrix_movie(squeeze(metrics.conductances(:,:,1:6,6)), ...
                         [fullfile(SAVEDIR,savefilename) '_FPN']); 
                 
-        resampled = {};
         nresamples = size(graphs,1);
-
         for resampleNo=1:nresamples
             sprintf('Resample No: %d',resampleNo)
             if(use_partial_correlation)
