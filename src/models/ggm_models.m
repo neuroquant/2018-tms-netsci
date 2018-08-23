@@ -10,25 +10,63 @@ function [ggm_results Shat] = ggm_models()
     tms_filenames = dir(fullfile(DATADIR,'*.mat'));
     tms_filenames = {tms_filenames.name};
     nconditions = length(tms_filenames);
-    methodname = 'weightedcorr';
+    methodname = 'kernelcorr';
     SAVEDIR=fullfile(SAVEDIR,['networktype_' methodname]);
     mkdir(SAVEDIR);
 
     for conditionNo=1:nconditions
         tms_filename = fullfile(DATADIR,...
                         tms_filenames{conditionNo});
-        Shat = get_cc_correlation_matrices(tms_filename,methodname); 
-    
-        ggm_results = struct();
-        % tic;
-        % ggm_results = estimator.model_average_populations(Shat);
-        % ggm_time = toc;
-        % disp(['Time Taken for Condition:' ggm_time])
-        % ggm_results
-    
+                        
         % Save Results
         [~,tmpfilename] = fileparts(tms_filename);
         savefilename = regexprep(tmpfilename,'collect_roitimeseries','stability_ggms');
+        
+        ls(fullfile(SAVEDIR,[savefilename '.mat']))
+        if(exist(fullfile(SAVEDIR,[savefilename '.mat'])))
+            sprintf('Loading %s',fullfile(SAVEDIR,savefilename))
+            load(fullfile(SAVEDIR,savefilename));
+            
+            A = mean(Shat,3); edges = A(find(triu(A,1)));
+            edge_range = prctile(abs(edges),[70 98]);
+            min_edge = round(edge_range(1),2);
+            max_edge = round(edge_range(2),2);
+            estimate_options = estimator.create_options();
+            estimate_options.lambda_min = min_edge;
+            estimate_options.lambda_max = max_edge;
+            
+        else
+            Shat = get_cc_correlation_matrices(tms_filename,methodname);    
+            ggm_results = struct();
+            n_samples = size(Shat,3);
+            estimate_options = estimator.create_options();
+            resampling_options = estimate_options.resampler.options(n_samples);
+            resampler = estimate_options.resampler.run(resampling_options);
+            n_resamples = resampler.options.B;
+            ggm_results.resampler = resampler;
+            
+            A = mean(Shat,3); edges = A(find(triu(A,1)));
+            edge_range = prctile(abs(edges),[70 98]);
+            min_edge = round(edge_range(1),2);
+            max_edge = round(edge_range(2),2);
+            estimate_options.lambda_min = min_edge;
+            estimate_options.lambda_max = max_edge;
+        end
+        
+        % shrinkShat = zeros(size(Shat));
+        % for cc=1:size(Shat,3)
+        %     shrinkage = estimator.stein_shrinkage_sample_covariance(Shat(:,:,cc));
+        %     tau_idx = max(find(shrinkage.tau>.0001));
+        %     shrinkShat(:,:,cc) = shrinkage.correlation{tau_idx};
+        % end
+        
+        estimate_options.path = estimate_options.lambdafun(min_edge,max_edge)
+        tic;
+        ggm_results = estimator.model_average_populations(Shat,estimate_options);
+        ggm_time = toc;
+        disp(['Time Taken for Condition:' ggm_time])
+        ggm_results
+    
         save(fullfile(SAVEDIR,savefilename),'-struct','ggm_results');
         save(fullfile(SAVEDIR,savefilename),'Shat','-append');
         
@@ -49,7 +87,8 @@ function Shat = get_cc_correlation_matrices(filename,varargin)
         method = 'corr';
     end
     
-    studydata = load(filename)
+    studydata = load(filename);
+    studydata.condition
     X = studydata.(studydata.Data);
     
     % Get subjects that are either NTHC or TEHC
