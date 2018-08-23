@@ -7,7 +7,12 @@ function resampled = cc_fmri_persistent_conductance()
     %DATADIR = fullfile('data','interim','CC','roitimeseries');                
     
     methodname = 'corr';
-    SAVEDIR=fullfile(DATADIR,'ggms',['networktype_' methodname],'corr_conductance');
+    use_partial_correlation = false;
+    if(use_partial_correlation)
+        SAVEDIR=fullfile(DATADIR,'ggms',['networktype_' methodname],'partialcorr_conductance');
+    else
+        SAVEDIR=fullfile(DATADIR,'ggms',['networktype_' methodname],'corr_conductance');
+    end
     mkdir(SAVEDIR);
     
     tms_filenames = dir(fullfile(DATADIR,'ggms',['networktype_' methodname],'*.mat'));
@@ -18,9 +23,8 @@ function resampled = cc_fmri_persistent_conductance()
     community = readtable('Schaefer200_Yeo7_labels.csv');
     Ci = community.communityno;
     
-    use_partial_correlation = false;
     
-    for conditionNo=1:nconditions
+    for conditionNo=2:nconditions
         warning off
         tms_filename = fullfile(DATADIR, 'ggms',['networktype_' methodname], ...
                         tms_filenames{conditionNo});
@@ -67,7 +71,7 @@ function resampled = cc_fmri_persistent_conductance()
                             [fullfile(SAVEDIR,savefilename) '_DMN']); 
         create_matrix_movie(squeeze(metrics.conductances(:,:,1:6,6)), ...
                         [fullfile(SAVEDIR,savefilename) '_FPN']); 
-
+                
         resampled = {};
         nresamples = size(graphs,1);
 
@@ -82,14 +86,15 @@ function resampled = cc_fmri_persistent_conductance()
                  Anew = mean(data.Shat(:,:,samples_idx),3);
                  Anew = abs(A);
              end
-            [resampled{resampleNo}.metrics resampled{resampleNo}.clique_adj resampled{resampleNo}.cliques] ...
+            [resampled{resampleNo}.metrics,~,resampled{resampleNo}.cliques] ...
                 = tda.persistent_conductance(Anew,Ci,thresholds,false,[]);
+            if(mod(resampleNo,5)==0)
+                save(fullfile(SAVEDIR,savefilename),'resampled','-append');
+            end
         end
-        % Save Results
-        [~,tmpfilename] = fileparts(tms_filename);
-        savefilename = regexprep(tmpfilename,'stability_ggms','clique_conductance');
         save(fullfile(SAVEDIR,savefilename),'resampled','-append');
-
+        
+        clear resampled;
     end
     
 end
