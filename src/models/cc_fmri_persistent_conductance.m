@@ -56,6 +56,12 @@ function metrics = cc_fmri_persistent_conductance()
              edge_range = prctile(abs(edges),[90 98]);
              min_edge = round(edge_range(1),2);
              max_edge = round(edge_range(2),2);
+             if(sum(abs(A(:))>min_edge)/nchoosek(size(A,1),2)>.15)
+                 disp('Updating Range')
+                 edge_range = prctile(abs(edges),[95 99]);
+                 min_edge = round(edge_range(1),2);
+                 max_edge = round(edge_range(2),2);
+             end
              A = abs(A); A = (A + A')/2;
         end
         thresholds = fliplr(unique(linspace(min_edge,max_edge,50)));
