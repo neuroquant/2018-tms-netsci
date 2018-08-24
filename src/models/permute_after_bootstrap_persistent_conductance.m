@@ -12,14 +12,23 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
     results.randstream = s;
     results.state = rng;
     
-    metricfun = @(x)(x.metrics.conductances(:,:,6,7)');
+    community_tbl = readtable('Schaefer200_Yeo7_labels.csv');
+    %communities = unique(community_tbl.communityno);
+    %regexprep(communities,{'SomMot','DorsAttn','SalVentAttn','Cont','Default'},...
+    %                        {'SMN','DAN','VAN','FPN','DMN'});
+    communities = {'Vis','SMN','DAN','VAN','Limbic','FPN','DMN'};
+
+    Cii=6;Cjj=7;
+    metricname = [communities{Cii} '-' communities{Cjj}]
+    metricfun = @(x)(x.metrics.conductances(:,:,Cii,Cjj)');
     
     methodname = 'corr';
     methodtype = fullfile(['networktype_' methodname],[methodname '_conductance']);
     [C labels] = collect_condition(methodtype,metricfun);
     results.C = C;
+    labels2 = regexprep(labels,'_','.');   
     
-    condNo1 = 13;
+    condNo1 = 5;
     condNo2 = 14;
     [maxT T] = conductance_test_statistic(C(:,:,:,condNo1),C(:,:,:,condNo2),1);
     maxT
@@ -40,29 +49,32 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
     permtime = toc;
     sprintf('Testing took %6f seconds',permtime)
     %histogram(maxTperm,20); 
-    assert(any(maxT==maxTperm)==0,'Permutations Not Working')
+    assert(all(maxT==maxTperm)==0,'Permutations Not Working')
     
-    pval = sum(maxTperm>maxT)/nperm;
-    sprintf('p-value for %s - %s:%.4f',labels{condNo1},labels{condNo2},pval)
+    pval = sum(abs(maxTperm)>abs(maxT))/nperm;
+    sprintf('p-value for %s - %s:%.4f',labels2{condNo1},labels2{condNo2},pval)
     
 
     
     DATADIR=['/Volumes/MACBOOKUSB/Datasets/' ...
                     'tms-fMRI/CC/roitimeseries'];
-    SAVEDIR = fullfile(DATADIR,'ggms',methodtype);
+    SAVEDIR = fullfile(DATADIR,'ggms',methodtype,metricname)
+    mkdir(SAVEDIR)
     save(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2}]),...
         'T','maxT','maxTperm','Tperm');
-        
+    
     figure;
     subplot(1,2,1); imagesc(T); caxis([0 1.1*maxT]); 
     colormap(brewermap(100,'PuOr'));
-    colorbar('Location','North');
-    title(sprintf('p-value for %s - %s:%.4f',labels{condNo1},labels{condNo2},pval));
+    colorbar('Location','SouthOutside');
+    title(sprintf('p-value for %s - %s:%.4f',labels2{condNo1},labels2{condNo2},pval));
     set(gca,'fontsize',12,'FontName','Fira Sans')
-    subplot(1,2,2); imagesc(mean(Tperm,3)); caxis([0 1.1*maxT]);
+    subplot(1,2,2); 
+    imagesc(mean(Tperm,3)); caxis([0 1.1*maxT]);
     colormap(brewermap(100,'PuOr'));
-    colorbar('Location','North');
-    title(sprintf('Permutation Null for %s - %s',labels{condNo1},labels{condNo2}));
+    colorbar('Location','SouthOutside');
+    %histogram(maxTperm,100,'Normalization','countdensity');
+    title(sprintf('Permutation Null for %s - %s',labels2{condNo1},labels2{condNo2}));
     set(gca,'fontsize',12,'FontName','Fira Sans')
     savefig(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2} '.fig']));
     export_fig(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2} '.png']),...
@@ -83,17 +95,21 @@ function [maxDiff Diff] = conductance_test_statistic(C1,C2,signDiff)
         %disp('> Statistic')
         %Diff = (C1-C2).*(C1>C2);
         [~,~,~,stats] = ttest2(C1,C2,'tail','right','vartype','unequal');
-        Diff = squeeze(stats.tstat);
-    else
+        Diff = (squeeze(stats.tstat));
+    elseif(signDiff<0)
         %disp('< Statistic')
         %Diff = (C2-C1).*(C2>C1);
         [~,~,~,stats] = ttest2(C1,C2,'tail','left','vartype','unequal');
-        Diff = squeeze(stats.tstat);
+        Diff = (squeeze(stats.tstat));
+    elseif(signDiff==0)
+        [~,~,~,stats] = ttest2(C1,C2,'tail','both','vartype','unequal');
+        Diff = abs(squeeze(stats.tstat));
     end
     if(ndims(Diff)==3)
-        Diff = mean(Diff,3);
+        Diff = mean(Diff,3)';
     end
-    maxDiff = max(max(Diff,[],1),[],2);
+    Diff(Diff==Inf) = NaN;
+    maxDiff = nanmax(nanmax(Diff,[],1),[],2);
     
 end
 
@@ -127,7 +143,7 @@ function [C condition_labels] = collect_condition(methodtype,metricfun)
 
     condition_labels = {};
     C = [];
-    for conditionNo=13:14%length(tms_filenames)
+    for conditionNo=[3:5 13:15]%length(tms_filenames)
         tms_filename = fullfile(LOADDIR,tms_filenames{conditionNo});
         myfile = matfile(tms_filename);
         data.resampled = myfile.('resampled');
@@ -141,7 +157,7 @@ function [C condition_labels] = collect_condition(methodtype,metricfun)
         disp(condition_labels{conditionNo});    
         % condition_labels((conditionNo-1)*nresamples + 1:nresamples) = ...
         %      [repmat(regexprep({tms_filenames{conditionNo}},'clique_conductances_',''),[1 nresamples])];
-
     end
-        
+    %nanrows = mean(sum(isnan(C(:,:,:,1)),2),3)==size(C,2);
+    %C = C(find(~nanrows),:,:,:);    
 end
