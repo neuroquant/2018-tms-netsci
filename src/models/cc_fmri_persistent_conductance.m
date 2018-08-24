@@ -6,7 +6,7 @@ function metrics = cc_fmri_persistent_conductance()
                     'tms-fMRI/CC/roitimeseries/'];
     %DATADIR = fullfile('data','interim','CC','roitimeseries');                
     
-    methodname = 'kernelcorr';
+    methodname = 'corr';
     use_partial_correlation = false;
     if(use_partial_correlation)
         SAVEDIR=fullfile(DATADIR,'ggms',['networktype_' methodname],'partialcorr_conductance');
@@ -24,7 +24,7 @@ function metrics = cc_fmri_persistent_conductance()
     Ci = community.communityno;
     
     resampled = {};
-    for conditionNo=5:nconditions
+    for conditionNo=13:15
         warning off
         tms_filename = fullfile(DATADIR, 'ggms',['networktype_' methodname], ...
                         tms_filenames{conditionNo});
@@ -95,7 +95,7 @@ function metrics = cc_fmri_persistent_conductance()
              else
                  samples_idx = data.resampler.samples(resampleNo,:);
                  Anew = mean(data.Shat(:,:,samples_idx),3);
-                 Anew = abs(A);
+                 Anew = abs(Anew);
              end
             [resampled{resampleNo}.metrics,~,resampled{resampleNo}.cliques] ...
                 = tda.persistent_conductance(Anew,Ci,thresholds,false,[]);
