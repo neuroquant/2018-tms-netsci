@@ -24,7 +24,7 @@ function metrics = cc_fmri_persistent_conductance()
     Ci = community.communityno;
     
     resampled = {};
-    for conditionNo=1:nconditions
+    for conditionNo=5:nconditions
         warning off
         tms_filename = fullfile(DATADIR, 'ggms',['networktype_' methodname], ...
                         tms_filenames{conditionNo});
@@ -33,7 +33,13 @@ function metrics = cc_fmri_persistent_conductance()
         if(isfield(data,'stability_graphs'))
             Pi = data.stability_graphs(:,:,end);
         end
-        graphs = data.Shat;
+        if(use_partial_correlation)
+            graphs = data.graphs;
+            nresamples = size(graphs,1);
+        else
+            graphs = data.Shat;
+            nresamples = size(data.resampler.samples,1);
+        end
         % figure;
         % imagesc(A);
         % axis image off;
@@ -47,7 +53,7 @@ function metrics = cc_fmri_persistent_conductance()
         if(use_partial_correlation)
              P = covariance.var_corr(data.refit_estimator.inverse_covariance_estimate);
              A = eye(size(P,1))-P; edges = A(find(triu(A,1)));
-             edge_range = prctile(abs(edges),[75 98]);
+             edge_range = prctile(abs(edges),[50 98]);
              min_edge = round(edge_range(1),2);
              max_edge = round(edge_range(2),2);  
              A = abs(A); A = (A + A')/2;   
@@ -80,7 +86,6 @@ function metrics = cc_fmri_persistent_conductance()
         create_matrix_movie(squeeze(metrics.conductances(:,:,1:6,6)), ...
                         [fullfile(SAVEDIR,savefilename) '_FPN']); 
                 
-        nresamples = size(graphs,1);
         for resampleNo=1:nresamples
             sprintf('Resample No: %d',resampleNo)
             if(use_partial_correlation)
@@ -99,7 +104,7 @@ function metrics = cc_fmri_persistent_conductance()
             end
         end
         save(fullfile(SAVEDIR,savefilename),'resampled','-append');
-        
+
         clear resampled;
     end
     
