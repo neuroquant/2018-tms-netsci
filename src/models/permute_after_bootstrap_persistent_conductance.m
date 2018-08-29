@@ -18,67 +18,146 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
     %                        {'SMN','DAN','VAN','FPN','DMN'});
     communities = {'Vis','SMN','DAN','VAN','Limbic','FPN','DMN'};
 
-    Cii=6;Cjj=7;
+    Cii=7;Cjj=7;
     metricname = [communities{Cii} '-' communities{Cjj}]
-    metricfun = @(x)(x.metrics.conductances(:,:,Cii,Cjj)');
     
     methodname = 'corr';
-    methodtype = fullfile(['networktype_' methodname],[methodname '_conductance']);
+    metrictype = 'clique';
+    switch metrictype
+    case 'clique'
+        %% For persistent conductance
+        metricfun = @(x)(x.metrics.conductances(:,:,Cii,Cjj)');
+        methodtype = fullfile(['networktype_' methodname],[ 'corr_conductance']);
+    case 'edge'
+        %% For edge conductance
+        metricfun = @(x)(x.metrics(Cii,Cjj));
+        methodtype = fullfile(['networktype_' methodname],[ 'corr_conductance'],...
+        'edge_conductance');
+    end
+
+
+
     [C labels] = collect_condition(methodtype,metricfun);
+    C = squeeze(C);
     results.C = C;
     labels2 = regexprep(labels,'_','.');   
     
-    condNo1 = 5;
-    condNo2 = 14;
-    [maxT T] = conductance_test_statistic(C(:,:,:,condNo1),C(:,:,:,condNo2),1);
-    maxT
+    tournamentG = zeros(length(labels),length(labels));
+    for ii=1:15
+        for jj=ii+1:15
+            condNo1 = ii;
+            condNo2 = jj;
+            disp([labels{condNo1} '_' labels{condNo2}]);
+            
+            %%%%%%%%%%%%%%%%%%%%
+            % DATADIR=['/Volumes/MACBOOKUSB/Datasets/' ...
+            %                'tms-fMRI/CC/roitimeseries'];
+            % LOADDIR = fullfile(DATADIR,'ggms',methodtype,metricname);
+            %
+            % switch metrictype
+            % case 'edge'
+            %     load(fullfile(LOADDIR,['edge_permstats_' labels{condNo1} '_' labels{condNo2}]));
+            % case 'clique'
+            %     load(fullfile(LOADDIR,['permstats_' labels{condNo1} '_' labels{condNo2}]));
+            % end
+            %%%%%%%%%%%%%%%%%%%
+            if(ndims(C)==4)
+            [maxT T] = ...
+                 conductance_test_statistic(C(:,:,:,condNo1),C(:,:,:,condNo2),1);
+            elseif(ndims(C)==2)
+                 [maxT T] = ...
+                      conductance_test_statistic(C(:,condNo1),C(:,condNo2),1);
+            else
+                error('Collection of metrics x condition failed');
+            end
+            maxT
+            
+            nperm = 10000;
+            maxTperm = zeros(1,nperm);
+            Tperm = zeros(size(T,1),size(T,2),nperm);
+            tic;
+            for permNo=1:nperm
+                if(ndims(C)==3)
+                    samples = permuter(2*size(C,3));
+                else
+                    samples = permuter(2*size(C,1));
+                end
+                nsamples = length(samples)/2;
+                results.samples(permNo,:) = samples;
+                if(ndims(C)==4)
+                    permC = cat(3,C(:,:,:,condNo1),C(:,:,:,condNo2));
+                    [maxTperm(permNo) Tperm(:,:,permNo)] =  ...
+                        conductance_test_statistic(permC(:,:,samples(1:nsamples)), ...
+                                         permC(:,:,samples(nsamples+1:2*nsamples)),1);
+                else
+                    permC = cat(1,C(:,condNo1),C(:,condNo2));
+                    [maxTperm(permNo) Tperm(permNo)] = ...
+                         conductance_test_statistic(permC(samples(1:nsamples)), ...
+                                         permC(samples(nsamples+1:2*nsamples)),1);
+                end
+            end
+            permtime = toc;
+            sprintf('Testing took %6f seconds',permtime)
+            %histogram(maxTperm,20);
+            assert(all(maxT==maxTperm)==0,'Permutations Not Working')
 
-    nperm = 2000;
-    maxTperm = zeros(1,nperm);
-    Tperm = zeros(size(T,1),size(T,2),nperm);
-    tic;
-    for permNo=1:nperm
-        samples = permuter(2*size(C,3));
-        nsamples = length(samples)/2;
-        permC = cat(3,C(:,:,:,condNo1),C(:,:,:,condNo2));
-        results.samples(permNo,:) = samples;
-        [maxTperm(permNo) Tperm(:,:,permNo)] =  ...
-                conductance_test_statistic(permC(:,:,samples(1:nsamples)), ...
-                                           permC(:,:,samples(nsamples+1:2*nsamples)),1);
-    end
-    permtime = toc;
-    sprintf('Testing took %6f seconds',permtime)
-    %histogram(maxTperm,20); 
-    assert(all(maxT==maxTperm)==0,'Permutations Not Working')
-    
-    pval = sum(abs(maxTperm)>abs(maxT))/nperm;
-    sprintf('p-value for %s - %s:%.4f',labels2{condNo1},labels2{condNo2},pval)
-    
+            pval = sum(abs(maxTperm)>abs(maxT))/nperm;
+            sprintf('p-value for %s - %s:%.6f',labels2{condNo1},labels2{condNo2},pval)
 
+
+            DATADIR=['/Volumes/MACBOOKUSB/Datasets/' ...
+                            'tms-fMRI/CC/roitimeseries'];
+            SAVEDIR = fullfile(DATADIR,'ggms',methodtype,metricname);
+            mkdir(SAVEDIR)
+            switch metrictype
+            case 'edge'
+                save(fullfile(SAVEDIR,...
+                ['edge_permstats_' labels{condNo1} '_' labels{condNo2}]),...
+                        'T','maxT','maxTperm','Tperm');
+            case 'clique'
+                save(fullfile(SAVEDIR,...
+                ['permstats_' labels{condNo1} '_' labels{condNo2}]),...
+                        'T','maxT','maxTperm','Tperm');
+            end
+            results.maxT = maxT;
+            results.maxTperm = maxTperm;
+            T = squeeze(T);
+            Tperm = squeeze(Tperm);
+            if(ndims(Tperm)==3)
+                figure;
+                subplot(1,2,1); imagesc(T); caxis([0 1.1*maxT]);
+                colormap(brewermap(100,'PuOr'));
+                colorbar('Location','SouthOutside');
+                title(sprintf('p-value for %s - %s:%.6f',labels2{condNo1},labels2{condNo2},pval));
+                set(gca,'fontsize',12,'FontName','Fira Sans')
+                subplot(1,2,2);
+                imagesc(mean(Tperm,3)); caxis([0 1.1*maxT]);
+                colormap(brewermap(100,'PuOr'));
+                colorbar('Location','SouthOutside');
+                %histogram(maxTperm,100,'Normalization','countdensity');
+                title(sprintf('Permutation Null for %s - %s',labels2{condNo1},labels2{condNo2}));
+                set(gca,'fontsize',12,'FontName','Fira Sans')
+                savefig(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2} '.fig']));
+                export_fig(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2} '.png']),...
+                           '-transparent');
+            end
+            
+            if(pval<.0004)
+                tournamentG(ii,jj) = maxT;
+                tournamentG(jj,ii) = -maxT;
+            else
+                tournamentG(ii,jj) = 0;
+            end
+        end
+    end 
     
-    DATADIR=['/Volumes/MACBOOKUSB/Datasets/' ...
-                    'tms-fMRI/CC/roitimeseries'];
-    SAVEDIR = fullfile(DATADIR,'ggms',methodtype,metricname)
-    mkdir(SAVEDIR)
-    save(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2}]),...
-        'T','maxT','maxTperm','Tperm');
+    tournament_tbl = array2table(tournamentG);
+    tournament_tbl.Properties.VariableNames = labels;
+    tournament_tbl.Properties.RowNames = labels;
+    SAVEDIR = fullfile(DATADIR,'ggms',methodtype,metricname);
+    writetable(tournament_tbl,...
+        fullfile(SAVEDIR,'edge_graph_all_conditions.csv'),'WriteRowNames',1);
     
-    figure;
-    subplot(1,2,1); imagesc(T); caxis([0 1.1*maxT]); 
-    colormap(brewermap(100,'PuOr'));
-    colorbar('Location','SouthOutside');
-    title(sprintf('p-value for %s - %s:%.4f',labels2{condNo1},labels2{condNo2},pval));
-    set(gca,'fontsize',12,'FontName','Fira Sans')
-    subplot(1,2,2); 
-    imagesc(mean(Tperm,3)); caxis([0 1.1*maxT]);
-    colormap(brewermap(100,'PuOr'));
-    colorbar('Location','SouthOutside');
-    %histogram(maxTperm,100,'Normalization','countdensity');
-    title(sprintf('Permutation Null for %s - %s',labels2{condNo1},labels2{condNo2}));
-    set(gca,'fontsize',12,'FontName','Fira Sans')
-    savefig(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2} '.fig']));
-    export_fig(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2} '.png']),...
-               '-transparent');
     
 end
 
@@ -89,13 +168,23 @@ end
 
 function [maxDiff Diff] = conductance_test_statistic(C1,C2,signDiff)
     
-    C1 = permute(C1,[3 1 2]);
-    C2 = permute(C2,[3 1 2]);
+    if(ndims(C1)==3)
+        C1 = permute(C1,[3 1 2]);
+        C2 = permute(C2,[3 1 2]);
+        stdC1 = nanstd(C1,[],1);
+        stdC2 = nanstd(C2,[],1);
+        stdC = (stdC1*(size(C1,1)-1) + stdC2*(size(C2,1)-1))/(size(C1,1)+size(C2,1)-2);
+        % C1 = bsxfun(@rdivide,C1,stdC1);
+        % C2 = bsxfun(@rdivide,C2,stdC2);
+    end
+
+
     if(isempty(signDiff)||signDiff>0)
         %disp('> Statistic')
-        %Diff = (C1-C2).*(C1>C2);
-        [~,~,~,stats] = ttest2(C1,C2,'tail','right','vartype','unequal');
-        Diff = (squeeze(stats.tstat));
+        % Diff = squeeze((C1-C2).*(C1>C2));
+        Diff = squeeze(nanmean((C1-C2).*(C1>C2),1)./stdC);
+        % [~,~,~,stats] = ttest2(C1,C2,'tail','right','vartype','unequal');
+        % Diff = (squeeze(stats.tstat));
     elseif(signDiff<0)
         %disp('< Statistic')
         %Diff = (C2-C1).*(C2>C1);
@@ -105,12 +194,17 @@ function [maxDiff Diff] = conductance_test_statistic(C1,C2,signDiff)
         [~,~,~,stats] = ttest2(C1,C2,'tail','both','vartype','unequal');
         Diff = abs(squeeze(stats.tstat));
     end
-    if(ndims(Diff)==3)
+    if(ndims(Diff)>=3)
         Diff = mean(Diff,3)';
+    elseif(ndims(Diff)==2 & any(size(Diff)==1))
+        Diff = mean(Diff,1);
     end
     Diff(Diff==Inf) = NaN;
-    maxDiff = nanmax(nanmax(Diff,[],1),[],2);
-    
+    if(ndims(Diff)>=2)
+        maxDiff = nanmax(nanmax(Diff,[],1),[],2);
+    else
+        maxDiff = Diff;
+    end
 end
 
 
@@ -138,13 +232,14 @@ function [C condition_labels] = collect_condition(methodtype,metricfun)
                     'tms-fMRI/CC/roitimeseries'];
     LOADDIR=fullfile(DATADIR,'ggms',methodtype);
 
-    tms_filenames = dir(fullfile(LOADDIR,'clique*.mat'));
+    tms_filenames = dir(fullfile(LOADDIR, '*.mat'));
     tms_filenames = {tms_filenames.name};
 
     condition_labels = {};
     C = [];
-    for conditionNo=[3:5 13:15]%length(tms_filenames)
-        tms_filename = fullfile(LOADDIR,tms_filenames{conditionNo});
+    for conditionNo=[1:15]%length(tms_filenames)
+        tms_filename = ...
+             fullfile(LOADDIR,tms_filenames{conditionNo});
         myfile = matfile(tms_filename);
         data.resampled = myfile.('resampled');
         if(~isfield(data,'resampled'))
