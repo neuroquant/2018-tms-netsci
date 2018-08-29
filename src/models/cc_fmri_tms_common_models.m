@@ -4,7 +4,7 @@ function [Shat tmsShat] = cc_fmri_tms_common_models()
                     'tms-fMRI/CC/roitimeseries'];
     %DATADIR = fullfile('data','interim','CC','roitimeseries');    
     
-    methodname = 'weightedcorr';            
+    methodname = 'corr';            
     SAVEDIR=fullfile(DATADIR,'ggms',['networktype_' methodname]);
     mkdir(SAVEDIR);
     ggm_results = struct();

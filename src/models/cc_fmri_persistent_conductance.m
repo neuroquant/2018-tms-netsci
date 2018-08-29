@@ -24,7 +24,7 @@ function metrics = cc_fmri_persistent_conductance()
     Ci = community.communityno;
     
     resampled = {};
-    for conditionNo=13:15
+    for conditionNo=1:12
         warning off
         tms_filename = fullfile(DATADIR, 'ggms',['networktype_' methodname], ...
                         tms_filenames{conditionNo});
@@ -97,8 +97,9 @@ function metrics = cc_fmri_persistent_conductance()
                  Anew = mean(data.Shat(:,:,samples_idx),3);
                  Anew = abs(Anew);
              end
-            [resampled{resampleNo}.metrics,~,resampled{resampleNo}.cliques] ...
-                = tda.persistent_conductance(Anew,Ci,thresholds,false,[]);
+            [resampled{resampleNo}.metrics, ...
+                tmp_clique_adj,resampled{resampleNo}.cliques] ...
+                    = tda.persistent_conductance(Anew,Ci,thresholds,false,[]);
             if(mod(resampleNo,5)==0)
                 save(fullfile(SAVEDIR,savefilename),'resampled','-append');
             end

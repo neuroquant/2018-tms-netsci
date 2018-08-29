@@ -28,7 +28,7 @@ function [ggm_results Shat] = ggm_models()
             load(fullfile(SAVEDIR,savefilename));
             
             A = mean(Shat,3); edges = A(find(triu(A,1)));
-            edge_range = prctile(abs(edges),[70 98]);
+            edge_range = prctile(abs(edges),[80 98]);
             min_edge = round(edge_range(1),2);
             max_edge = round(edge_range(2),2);
             estimate_options = estimator.create_options();
@@ -46,7 +46,7 @@ function [ggm_results Shat] = ggm_models()
             ggm_results.resampler = resampler;
             
             A = mean(Shat,3); edges = A(find(triu(A,1)));
-            edge_range = prctile(abs(edges),[70 98]);
+            edge_range = prctile(abs(edges),[80 98]);
             min_edge = round(edge_range(1),2);
             max_edge = round(edge_range(2),2);
             estimate_options.lambda_min = min_edge;
