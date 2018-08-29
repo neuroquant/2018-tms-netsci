@@ -1,3 +1,6 @@
+[cache]
+type = copy
+
 [core]
 remote = oak-tms-netsci-data
 ['remote "oak-tms-netsci-data"']
