@@ -152,8 +152,8 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
     end 
     
     tournament_tbl = array2table(tournamentG);
-    tournament_tbl.Properties.VariableNames = labels;
-    tournament_tbl.Properties.RowNames = labels;
+    tournament_tbl.Properties.VariableNames = labels2;
+    tournament_tbl.Properties.RowNames = labels2;
     SAVEDIR = fullfile(DATADIR,'ggms',methodtype,metricname);
     writetable(tournament_tbl,...
         fullfile(SAVEDIR,'edge_graph_all_conditions.csv'),'WriteRowNames',1);
@@ -171,18 +171,39 @@ function [maxDiff Diff] = conductance_test_statistic(C1,C2,signDiff)
     if(ndims(C1)==3)
         C1 = permute(C1,[3 1 2]);
         C2 = permute(C2,[3 1 2]);
-        stdC1 = nanstd(C1,[],1);
-        stdC2 = nanstd(C2,[],1);
-        stdC = (stdC1*(size(C1,1)-1) + stdC2*(size(C2,1)-1))/(size(C1,1)+size(C2,1)-2);
+        stdC1 = squeeze(nanstd(C1,[],1));
+        n1 = squeeze(sum(~isnan(C1),1));
+        n2 = squeeze(sum(~isnan(C2),1));
+        stdC2 = squeeze(nanstd(C2,[],1));
+        nanmat = n1 <= 10 | n2 <= 10 | squeeze(stdC1<1e-10) | squeeze(stdC2<1e-10);
+        stdC = (stdC1.*n1 + stdC2.*n2)./(n1 + n2 -2);
+        stdC(nanmat==1) = 1.0;
+
+        %% This is only a concern for the observed T-stat; not permuted null cases
+        % if(~isempty(find(stdC<1e-12)))
+        %     stdC(find(stdC<1e-12))
+        %     warning('Numerical Errors in Conductance T-Statistic')
+        % end
+        
+        % assert(isempty(find(stdC<1e-6)),'Numerical Errors in Conductance T-Statistic');
         % C1 = bsxfun(@rdivide,C1,stdC1);
         % C2 = bsxfun(@rdivide,C2,stdC2);
+    else
+        stdC1 = squeeze(nanstd(C1,[],1));
+        n1 = squeeze(sum(~isnan(C1),1));
+        n2 = squeeze(sum(~isnan(C2),1));
+        stdC2 = squeeze(nanstd(C2,[],1));
+        stdC = (stdC1.*n1 + stdC2.*n2)./(n1 + n2 -2);
     end
 
 
     if(isempty(signDiff)||signDiff>0)
         %disp('> Statistic')
-        % Diff = squeeze((C1-C2).*(C1>C2));
-        Diff = squeeze(nanmean((C1-C2).*(C1>C2),1)./stdC);
+        %Diff = squeeze((C1-C2).*(C1>C2));
+        Diff = squeeze(nanmean((C1-C2).*(C1>C2),1))./stdC;
+        Diff(nanmat==1) = NaN;
+        % C1(nanmat==1) = 0;
+        % C2(nanmat==1) = 0;
         % [~,~,~,stats] = ttest2(C1,C2,'tail','right','vartype','unequal');
         % Diff = (squeeze(stats.tstat));
     elseif(signDiff<0)
@@ -237,7 +258,7 @@ function [C condition_labels] = collect_condition(methodtype,metricfun)
 
     condition_labels = {};
     C = [];
-    for conditionNo=[1:15]%length(tms_filenames)
+    for conditionNo=1:15%length(tms_filenames)
         tms_filename = ...
              fullfile(LOADDIR,tms_filenames{conditionNo});
         myfile = matfile(tms_filename);
