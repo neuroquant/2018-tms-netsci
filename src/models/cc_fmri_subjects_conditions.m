@@ -7,11 +7,11 @@ function cc_fmri_subjects_conditions()
     %DATADIR = fullfile('data','interim','CC','roitimeseries');                
 
     % Example
-    conditions = readtable('cc_fmri_subjects_conditions.csv');
-    imagesc(table2array(conditions))
-    colormap(viridis);
-    set(gca,'fontsize',16,'FontName','Fira Sans')
-    xlabel('Conditions'); ylabel('Subjects')
+    % conditions = readtable('cc_fmri_subjects_conditions.csv');
+    % imagesc(table2array(conditions))
+    % colormap(viridis);
+    % set(gca,'fontsize',16,'FontName','Fira Sans')
+    % xlabel('Conditions'); ylabel('Subjects')
     %set(gca,'XTick',[1:14]+.5,'XTickLabels',regexprep(rowlabels,'_','.'),'XTickLabelRotation',45)
 
     tms_filenames = dir(fullfile(DATADIR,'*.mat'));
