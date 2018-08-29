@@ -1,3 +1,7 @@
+# CONTENTS
+
+Contents of this repository, generated using `tree -L 3 -I "__*" -A -C`
+
 .
 ├── configs
 │   ├── sptms_eeg_dataset_template.json
