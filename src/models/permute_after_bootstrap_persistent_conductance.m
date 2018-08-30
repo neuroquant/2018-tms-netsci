@@ -22,29 +22,37 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
     metricname = [communities{Cii} '-' communities{Cjj}]
     
     methodname = 'corr';
-    metrictype = 'clique';
+    networktype = 'corr'
+    metrictype = 'edge';
+
     switch metrictype
     case 'clique'
         %% For persistent conductance
         metricfun = @(x)(x.metrics.conductances(:,:,Cii,Cjj)');
-        methodtype = fullfile(['networktype_' methodname],[ 'corr_conductance']);
+        methodtype = fullfile(['networktype_' methodname],[ networktype '_conductance'],'*');
+        [C labels] = collect_condition(methodtype,metricfun);
+        methodtype = fullfile(['networktype_' methodname],[ networktype '_conductance']);
+        
     case 'edge'
         %% For edge conductance
         metricfun = @(x)(x.metrics(Cii,Cjj));
+        methodtype = fullfile(['networktype_' methodname],[ networktype '_conductance'],...
+        ['edge_conductance_*']);
+        [C labels] = collect_condition(fullfile(methodtype),metricfun);
         methodtype = fullfile(['networktype_' methodname],[ 'corr_conductance'],...
-        'edge_conductance');
+        ['edge_conductance']);
     end
 
 
 
-    [C labels] = collect_condition(methodtype,metricfun);
     C = squeeze(C);
     results.C = C;
+    labels = regexprep(labels,'edge_conductance_','');
     labels2 = regexprep(labels,'_','.');   
     
     tournamentG = zeros(length(labels),length(labels));
     for ii=1:15
-        for jj=ii+1:15
+        for jj=setdiff(1:15,ii)
             condNo1 = ii;
             condNo2 = jj;
             disp([labels{condNo1} '_' labels{condNo2}]);
@@ -71,7 +79,7 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
                 error('Collection of metrics x condition failed');
             end
             maxT
-            
+
             nperm = 10000;
             maxTperm = zeros(1,nperm);
             Tperm = zeros(size(T,1),size(T,2),nperm);
@@ -109,21 +117,31 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
                             'tms-fMRI/CC/roitimeseries'];
             SAVEDIR = fullfile(DATADIR,'ggms',methodtype,metricname);
             mkdir(SAVEDIR)
+            results.maxT = maxT;
+            results.maxTperm = maxTperm;
+            results.maxTpval = pval;
+            results.T = T;
+            if(ndims(Tperm)==3)
+                results.Tperm = Tperm(:,:,1:1000);
+                results.nullTperm = mean(Tperm,3);
+                results.pval = sum(abs(Tperm)>repmat(abs(T),[1 1 size(Tperm,3)]),3)/nperm;
+                results.pval(isnan(T)) = NaN;
+            end
             switch metrictype
             case 'edge'
                 save(fullfile(SAVEDIR,...
                 ['edge_permstats_' labels{condNo1} '_' labels{condNo2}]),...
-                        'T','maxT','maxTperm','Tperm');
+                        'T','maxT','maxTperm','pval');
             case 'clique'
                 save(fullfile(SAVEDIR,...
                 ['permstats_' labels{condNo1} '_' labels{condNo2}]),...
-                        'T','maxT','maxTperm','Tperm');
+                        '-struct','results');
             end
-            results.maxT = maxT;
-            results.maxTperm = maxTperm;
+
             T = squeeze(T);
             Tperm = squeeze(Tperm);
             if(ndims(Tperm)==3)
+                close all;
                 figure;
                 subplot(1,2,1); imagesc(T); caxis([0 1.1*maxT]);
                 colormap(brewermap(100,'PuOr'));
@@ -141,19 +159,21 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
                 export_fig(fullfile(SAVEDIR,['permstats_' labels{condNo1} '_' labels{condNo2} '.png']),...
                            '-transparent');
             end
-            
-            if(pval<.0004)
+
+            if(pval<.001)
                 tournamentG(ii,jj) = maxT;
-                tournamentG(jj,ii) = -maxT;
+                %tournamentG(jj,ii) = -maxT;
             else
                 tournamentG(ii,jj) = 0;
             end
+            
         end
     end 
     
     tournament_tbl = array2table(tournamentG);
-    tournament_tbl.Properties.VariableNames = labels2;
-    tournament_tbl.Properties.RowNames = labels2;
+    labels2
+    tournament_tbl.Properties.VariableNames = labels;
+    tournament_tbl.Properties.RowNames = labels;
     SAVEDIR = fullfile(DATADIR,'ggms',methodtype,metricname);
     writetable(tournament_tbl,...
         fullfile(SAVEDIR,'edge_graph_all_conditions.csv'),'WriteRowNames',1);
@@ -189,10 +209,10 @@ function [maxDiff Diff] = conductance_test_statistic(C1,C2,signDiff)
         % C1 = bsxfun(@rdivide,C1,stdC1);
         % C2 = bsxfun(@rdivide,C2,stdC2);
     else
-        stdC1 = squeeze(nanstd(C1,[],1));
+        stdC1 = squeeze(nanstd(C1));
         n1 = squeeze(sum(~isnan(C1),1));
         n2 = squeeze(sum(~isnan(C2),1));
-        stdC2 = squeeze(nanstd(C2,[],1));
+        stdC2 = squeeze(nanstd(C2));
         stdC = (stdC1.*n1 + stdC2.*n2)./(n1 + n2 -2);
     end
 
@@ -201,7 +221,9 @@ function [maxDiff Diff] = conductance_test_statistic(C1,C2,signDiff)
         %disp('> Statistic')
         %Diff = squeeze((C1-C2).*(C1>C2));
         Diff = squeeze(nanmean((C1-C2).*(C1>C2),1))./stdC;
-        Diff(nanmat==1) = NaN;
+        if(ndims(C1)==3)
+            Diff(nanmat==1) = NaN;
+        end
         % C1(nanmat==1) = 0;
         % C2(nanmat==1) = 0;
         % [~,~,~,stats] = ttest2(C1,C2,'tail','right','vartype','unequal');
@@ -253,14 +275,15 @@ function [C condition_labels] = collect_condition(methodtype,metricfun)
                     'tms-fMRI/CC/roitimeseries'];
     LOADDIR=fullfile(DATADIR,'ggms',methodtype);
 
-    tms_filenames = dir(fullfile(LOADDIR, '*.mat'));
+    tms_filenames = dir([LOADDIR '*.mat']);
+    tms_folder = fileparts(LOADDIR);
     tms_filenames = {tms_filenames.name};
 
     condition_labels = {};
     C = [];
     for conditionNo=1:15%length(tms_filenames)
         tms_filename = ...
-             fullfile(LOADDIR,tms_filenames{conditionNo});
+             fullfile(tms_folder,tms_filenames{conditionNo});
         myfile = matfile(tms_filename);
         data.resampled = myfile.('resampled');
         if(~isfield(data,'resampled'))
@@ -269,7 +292,9 @@ function [C condition_labels] = collect_condition(methodtype,metricfun)
         C(:,:,:,conditionNo) = get_all_conductances(data.resampled,metricfun);
         nresamples = length(data.resampled);
         condition_labels{conditionNo} = ...
-             regexprep(tms_filenames{conditionNo},{'clique_conductance_','.mat'},{'',''});
+             regexprep(tms_filenames{conditionNo},...
+                 {'clique_conductance_','edge_conductance_','.mat'},...
+                 {'','',''});
         disp(condition_labels{conditionNo});    
         % condition_labels((conditionNo-1)*nresamples + 1:nresamples) = ...
         %      [repmat(regexprep({tms_filenames{conditionNo}},'clique_conductances_',''),[1 nresamples])];
