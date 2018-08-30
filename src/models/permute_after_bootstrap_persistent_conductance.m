@@ -22,14 +22,14 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
     metricname = [communities{Cii} '-' communities{Cjj}]
     
     methodname = 'corr';
-    networktype = 'corr'
+    networktype = 'partialcorr'
     metrictype = 'edge';
 
     switch metrictype
     case 'clique'
         %% For persistent conductance
         metricfun = @(x)(x.metrics.conductances(:,:,Cii,Cjj)');
-        methodtype = fullfile(['networktype_' methodname],[ networktype '_conductance'],'*');
+        methodtype = fullfile(['networktype_' methodname],[ networktype '_conductance'],'clique*');
         [C labels] = collect_condition(methodtype,metricfun);
         methodtype = fullfile(['networktype_' methodname],[ networktype '_conductance']);
         
@@ -39,7 +39,7 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
         methodtype = fullfile(['networktype_' methodname],[ networktype '_conductance'],...
         ['edge_conductance_*']);
         [C labels] = collect_condition(fullfile(methodtype),metricfun);
-        methodtype = fullfile(['networktype_' methodname],[ 'corr_conductance'],...
+        methodtype = fullfile(['networktype_' methodname],[ networktype '_conductance'],...
         ['edge_conductance']);
     end
 
@@ -160,8 +160,13 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
                            '-transparent');
             end
 
-            if(pval<.001)
-                tournamentG(ii,jj) = maxT;
+            if(nanmin(pval(:))<.001)
+                if(length(pval)>1)
+                    tournamentG(ii,jj) = ...
+                        max(max(T(pval>0)));
+                else
+                    tournamentG(ii,jj) = maxT;
+                end
                 %tournamentG(jj,ii) = -maxT;
             else
                 tournamentG(ii,jj) = 0;
