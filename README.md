@@ -3,6 +3,16 @@
 
 Analysis of various tms induced networkss
 
+
+Data Description
+========================
+
+```
+| L_Fp | L_IFG_Anat | L_IFG_BLA | L_VmFp | L_aMFG | L_pMFG | R_FEF | R_Fp | R_IFG_Anat | R_IFG_BLA | R_IFJ | R_IPL | R_M1 | R_VmFp | R_aMFG | R_pMFG | R_preSMA |
+|:----:|:----------:|:---------:|:------:|:------:|:------:|:-----:|:----:|:----------:|:---------:|:-----:|:-----:|:----:|:------:|:------:|:------:|:--------:|
+|  64  |     29     |     29    |   29   |   75   |   78   |   76  |  67  |     27     |     39    |   74  |   49  |  77  |   31   |   78   |   77   |    62    |
+```
+
 Project Organization
 ------------
 
