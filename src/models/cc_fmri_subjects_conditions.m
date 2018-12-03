@@ -2,8 +2,7 @@ function cc_fmri_subjects_conditions()
     % 
     % Returns subjects x conditions table
     % 
-    DATADIR=['/Volumes/MACBOOKUSB/Datasets/' ...
-                    'tms-fMRI/CC/roitimeseries'];
+    DATADIR=fullfile(getenv('CC_DATADIR'),'SchaeferYeo100','roitimeseries');
     %DATADIR = fullfile('data','interim','CC','roitimeseries');                
 
     % Example
@@ -50,7 +49,16 @@ function cc_fmri_subjects_conditions()
     end
 
     conditions.Properties.RowNames = regexprep(subjects_union',{'CausCon_'},'');
+    writetable(conditions,'cc_fmri_subjects_conditions.csv', ...
+         'WriteVariableNames',1,'Delimiter',',','WriteRowNames',1);  
     
-    writetable(conditions,'cc_fmri_subjects_conditions.csv','WriteVariableNames',1,'Delimiter',',');
+    figure;
+    set(gcf,'Position',[440   148   776   650])     
+    imagesc(table2array(conditions)); 
+    axis image tight;
+    set(gca,'XTick',1:width(conditions),...
+            'XTickLabel',conditions.Properties.VariableNames,...
+            'XTickLabelRotation',45,...
+            'fontsize',16);
     
 end
