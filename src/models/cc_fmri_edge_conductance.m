@@ -4,10 +4,10 @@ function [files] = cc_fmri_edge_conductance()
     % 
     % 
     % 
+    ATLAS='SchaeferYeo100';
+    DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS,'roitimeseries');
     
-    DATADIR = getenv('DATADIR');
-    
-    methodname = 'corr';
+    methodname = 'weightedcorr';
     use_partial_correlation = true;
     if(use_partial_correlation)
         SAVEDIR=fullfile(DATADIR,'ggms',['networktype_' methodname],'partialcorr_conductance');
@@ -21,11 +21,16 @@ function [files] = cc_fmri_edge_conductance()
     nconditions = length(tms_filenames);
     
     % Load Community Labels for ROIs
-    community = readtable('Schaefer200_Yeo7_labels.csv');
+    switch ATLAS
+    case 'SchaeferYeo100'
+        community = readtable(['Schaefer100_Yeo7_labels.csv']);
+    case 'SchaeferYeo200'
+        community = readtable(['Schaefer200_Yeo7_labels.csv']);
+    end
     Ci = community.communityno;
     
     resampled = {};
-    for conditionNo=1:15
+    for conditionNo=1:length(tms_filenames)
         warning off
         tms_filename = fullfile(DATADIR, 'ggms',['networktype_' methodname], ...
                         tms_filenames{conditionNo});
