@@ -1,7 +1,7 @@
 function [Shat tmsShat] = cc_fmri_tms_common_models()
     
-    DATADIR=['/Volumes/MACBOOKUSB/Datasets/' ...
-                    'tms-fMRI/CC/roitimeseries'];
+    DATADIR=fullfile(getenv('CC_DATADIR'),'Schaefer100_Yeo7');
+
     %DATADIR = fullfile('data','interim','CC','roitimeseries');    
     
     methodname = 'corr';            
