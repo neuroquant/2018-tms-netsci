@@ -1,8 +1,8 @@
 function [ggm_results Shat] = ggm_models()
     
-    %DATADIR=fullfile(getenv('CC_DATADIR'),'SchaeferYeo200','roitimeseries');
     %DATADIR = fullfile('data','interim','CC','roitimeseries');
-    DATADIR=fullfile(getenv('CC_DATADIR'),'Schaefer100_Yeo7');
+    DATADIR=fullfile(getenv('CC_DATADIR'),'SchaeferYeo100','roitimeseries');
+    %DATADIR=fullfile(getenv('CC_DATADIR_ALT'),'Schaefer100_Yeo7');
                     
     SAVEDIR=fullfile(DATADIR,'ggms');
     mkdir(SAVEDIR);
@@ -91,7 +91,7 @@ function [ggm_results Shat] = ggm_models()
     
 end
 
-function Shat = get_cc_correlation_matrices(filename,varargin)
+function [Shat Xnorm] = get_cc_correlation_matrices(filename,varargin)
     
     switch nargin
     case 2
@@ -104,6 +104,7 @@ function Shat = get_cc_correlation_matrices(filename,varargin)
     end
     
     nTRs = 164;
+    confounddir = fullfile(getenv('CC_DATADIR_ALT'),'..','confounds');
     studydata = load(filename);
     studydata.condition
     X = studydata.(studydata.Data);
@@ -117,6 +118,7 @@ function Shat = get_cc_correlation_matrices(filename,varargin)
         'UniformOutput',false)));
     healthy_idx = intersect(healthy_idx,notempty_idx);
     X = X(healthy_idx);
+    subjects = studydata.subjects(healthy_idx);
     if(~isempty(Xconfounds))
         Xconfounds = Xconfounds(healthy_idx);
     end
@@ -156,14 +158,39 @@ function Shat = get_cc_correlation_matrices(filename,varargin)
     
     for cc=1:nsubjects
         disp(sprintf('Subject %d',cc))
+        subid = regexp(subjects{cc},'_','split');
+        subid{2}
+        confoundfile = dir(fullfile(confounddir, ...
+                        ['*' subid{2} '*' ...
+                        regexprep(studydata.condition,'_','') '*regressors.csv']));
+        if(~isempty(confoundfile))
+            confoundfile2 = fullfile(confounddir,confoundfile.name);
+            fprep_confounds = readtable(confoundfile2,'Delimiter','\t', ...
+                                        'TreatAsEmpty',{'n/a'});
+            fprep_Xconfound = create_fprep_confounds(fprep_confounds, ...
+                                                '4P+6M+6acompcor');    
+        else
+            fprep_Xconfound = [];
+        end
         XX = X{cc}; 
+        
         % Check that session length is exactly nTRs long or chose the last few TRs.
         if(size(XX,1)>nTRs)
             XX = XX(end-nTRs+1:end,:);
         end
-        if(~isempty(Xconfounds))
-            X_confound =  Xconfounds{cc}.X();
-            X_perpY = Xy_orthogonalize(XX, X_confound(end-nTRs+1:end,4:9)); % Only 6 nuisance motion regressors
+        
+        %% Used 11-2018
+        % if(~isempty(Xconfounds))
+        %     X_confound =  Xconfounds{cc}.X();
+        %     X_perpY = Xy_orthogonalize(XX, X_confound(end-nTRs+1:end,4:9)); % Only 6 nuisance motion regressors
+        %     Xnorm = standardize.successive_normalize(X_perpY);
+        % else
+        %     disp('Empty motion regressors')
+        %     Xnorm = standardize.successive_normalize(XX);
+        % end
+        if(~isempty(fprep_Xconfound))
+            fprep_Xconfound = zscore(fprep_Xconfound(end-nTRs+1:end,:));
+            X_perpY = Xy_orthogonalize(XX,fprep_Xconfound); 
             Xnorm = standardize.successive_normalize(X_perpY);
         else
             disp('Empty motion regressors')
@@ -231,6 +258,119 @@ function X_perpY =  Xy_orthogonalize(X,Y)
 	X_perpY = Xcen - proj(Y)*Xcen;
 	X_perpY = bsxfun(@plus,X_perpY,mu);
  
+end
+
+function Xresiduals = nuisance_regression(X,Y,method)
+    
+    lmobj = fitlm(Y,X);
+    Xresiduals = Y - X*lmobj.Coefficients;
+
+end
+
+function Xconfound = create_fprep_confounds(fprep_confounds,method)
+    
+    % Confounds List
+    % {'csf'                       }
+    % {'white_matter'              }
+    % {'global_signal'             }
+    % {'std_dvars'                 }
+    % {'dvars'                     }
+    % {'framewise_displacement'    }
+    % {'t_comp_cor_00'             }
+    % {'t_comp_cor_01'             }
+    % {'t_comp_cor_02'             }
+    % {'t_comp_cor_03'             }
+    % {'t_comp_cor_04'             }
+    % {'t_comp_cor_05'             }
+    % {'a_comp_cor_00'             }
+    % {'a_comp_cor_01'             }
+    % {'a_comp_cor_02'             }
+    % {'a_comp_cor_03'             }
+    % {'a_comp_cor_04'             }
+    % {'a_comp_cor_05'             }
+    % {'cosine00'                  }
+    % {'cosine01'                  }
+    % {'cosine02'                  }
+    % {'cosine03'                  }
+    % {'cosine04'                  }
+    % {'non_steady_state_outlier00'}
+    % {'non_steady_state_outlier01'}
+    % {'trans_x'                   }
+    % {'trans_y'                   }
+    % {'trans_z'                   }
+    % {'rot_x'                     }
+    % {'rot_y'                     }
+    % {'rot_z'                     }
+    % {'aroma_motion_01'           }
+    % {'aroma_motion_02'           }
+    % ....
+    
+    % Basic Confounds;
+    % Default; '4P+6M'; % Discrete Cosines Basis for High Pass filtering 
+                    % + 6 Movement Parameters + WM + CSF + dvars + FD
+
+    
+    Iscosines = strfind(fprep_confounds.Properties.VariableNames,'cosine');
+    Iscosines = find(cellfun(@(x)(~isempty(x)),Iscosines,'UniformOutput',1));
+    cosines = fprep_confounds.Properties.VariableNames(Iscosines);
+    basic_confounds = fprep_confounds(:,...
+                       [{'csf',...
+                        'white_matter', ...
+                        'std_dvars', ...
+                        'framewise_displacement'} ...
+                        cosines] ...                        
+                        );
+    motion =  fprep_confounds(:, { ...
+                        'trans_x', ...
+                        'trans_y', ...
+                        'trans_z', ...
+                        'rot_x', ...
+                        'rot_y', ...
+                        'rot_z' ...
+                        });
+    motion_squared = table();
+    for ii=1:width(motion)
+        colname = motion.Properties.VariableNames{ii};
+        motion_squared.([colname '_sqd']) = motion.(colname).^2;
+    end
+    
+    switch method
+        
+    case {'4P+6M+6acompcor','6acompcor'}
+        additional_confounds = fprep_confounds(:,...
+                       {'a_comp_cor_00',...
+                        'a_comp_cor_01', ...
+                        'a_comp_cor_02', ...
+                        'a_comp_cor_03', ...
+                        'a_comp_cor_04', ...
+                        'a_comp_cor_05', ...
+                        });
+        additional_confounds = horzcat(additional_confounds, motion);                 
+    case {'4P+12M+6acompcor'}
+        additional_confounds = fprep_confounds(:,...
+                       {'a_comp_cor_00',...
+                        'a_comp_cor_01', ...
+                        'a_comp_cor_02', ...
+                        'a_comp_cor_03', ...
+                        'a_comp_cor_04', ...
+                        'a_comp_cor_05', ...
+                        });
+        additional_confounds = horzcat(additional_confounds, ...
+                        motion, motion_squared);
+                                        
+    case {'4P+12M'}
+        additional_confounds = horzcat(motion,motion_squared);        
+
+    case {'4P+6M'}
+        additional_confounds = motion;
+        
+    otherwise 
+        disp('Unsupported argument')
+        disp(method)
+    end
+    
+    Xconfound = table2array(horzcat(basic_confounds, additional_confounds));
+    
 end
 
 
