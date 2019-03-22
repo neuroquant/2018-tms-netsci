@@ -1,0 +1,16 @@
+{
+    "Modality": "MR",
+    "Manufacturer": "GE MEDICAL SYSTEMS",
+    "ManufacturersModelName": "DISCOVERY MR750",
+    "ReceiveCoilName": "8HRBRAIN",
+    "MagneticFieldStrength": 3.0,
+    "InstitutionName": "Stanford_Lucas_Center",
+    "PulseSequenceType": "Gradient Echo Spiral In and Out",
+    "SequenceName": "spiralio",
+    "RepetitionTime": 2.4,
+    "SliceThickness": 4,
+    "EchoTime": 0.3,
+    "InversionTime": 0.0,
+    "FlipAngle": 85,
+    "TaskName": "singlepulseLpMFG"
+}

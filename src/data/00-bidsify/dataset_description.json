@@ -1,0 +1,18 @@
+{
+    "BIDSVersion": "1.0.0",
+    "License": "No License",
+    "Name": "Causal Connectome: Mapping and Manipulating Circuits for Emotion and Cognition in Anxiety and Depression",
+    "Authors": [
+	"Colleen Mills Finnerty",
+	"ALL OTHER AUTHORS",
+	"Carena A. Cornelsson",
+	"Rachael Nadine Wright",
+	"Amit Etkin"
+	],
+    "Funding": ["National Institude of Mental Health R01MH103324"],
+    "ReferencesAndLinks": [
+	"Paper1",
+	"Paper2",
+	"Paper3"
+	]	
+}
