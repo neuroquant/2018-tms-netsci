@@ -3,8 +3,9 @@
 # Input and output directories #
 ################################
 BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome
-BIDSDIR=${BASEDIR}/BIDS
-OUTPUTDIR=${BASEDIR}/derivatives/fmriprep
+BIDSDIR=${OAK}/projects/causcon-bids.v1.0
+#OUTPUTDIR=${BASEDIR}/derivatives/fmriprep
+OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsl
 WORKDIR=${BASEDIR}/work/fmriprep
 ##########################
 # Singularity containers #
@@ -41,8 +42,11 @@ FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
 #########################
 # Preprocessing Options #
 #########################
-# SLURM_ARRAY_TASK_ID=1
-SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects_tms.txt)
+## SLURM_ARRAY_TASK_ID=1
+# SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects_tms.txt)
+## Find missing subjects from ica list
+# grep -v -F -f  LpMFG_ica.txt LpMFG_bids.txt > LpMFG_missing.txt
+SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" LpMFG_missing.txt)
 TASKID=(rest)
 TASK_TMS=(singlepulseLaMFG)
 # singlepulseLaMFG singlepulseLFp singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp
@@ -57,7 +61,7 @@ MNI152_SYM=/home/users/manjarin/ANALYSIS/pipelines/sherlock-preproc/2017-preproc
 ##
 IGNORE_OPTS=(slicetiming fieldmaps) 
 OUTPUT_SPACE=(T1w template)
-BOLD2T1DOF=9 # can be 6,9,12. --bold2t1w-dof
+BOLD2T1DOF=12 # can be 6,9,12. --bold2t1w-dof
 OUTPUT_GRID_REFERENCE=${HOME}/ANALYSIS/pipelines/sherlock-preproc/2017-preproc-tms-fmri/configs/resources/Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
 # To be added or considered
 # --no-skull-strip-ants (not available in v1.0.7)
@@ -67,7 +71,14 @@ OUTPUT_GRID_REFERENCE=${HOME}/ANALYSIS/pipelines/sherlock-preproc/2017-preproc-t
 # --output-grid-reference (Specify craddock or yeo compatible one) –template-resampling-grid
 # --use-aroma
 # --ignore-aroma-denoising-errors
+# --skip_bids_validation
+# --task-id ${TASK_TMS}
 # --force-no-bbr
+########################
+#.    Updates          #
+########################
+# 04-09-2019: Removed --force-bbr so that subjects with bad registrations default to 
+# no bbr.
 #########################
 #     Preliminaries     #
 #########################
@@ -84,24 +95,24 @@ do
     echo "${SCRATCHDIR}"
     echo "${WORKDIR}"
     
-    echo "singularity run ${FPREP_IMG} ${BIDSDIR} ${OUTPUTDIR} participant --boilerplate \
-    --skip_bids_validation \
-    --participant_label ${sub} \
-    --task-id ${TASK_TMS} \
-    --bold2t1w-dof ${BOLD2T1DOF} \
-    --ignore-aroma-denoising-errors \
-    --output-space "${OUTPUT_SPACE}" \
-    --write-graph \
-    --template-resampling-grid "${OUTPUT_GRID_REFERENCE}" \
-    --fs-no-reconall \
-    --ignore ${IGNORE_OPTS} fieldmaps \
-    -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}"
+    echo "singularity run ${FPREP_IMG} ${BIDSDIR} ${OUTPUTDIR} participant 	--boilerplate \
+	--participant_label ${sub} \
+	--bold2t1w-dof ${BOLD2T1DOF} \
+	--use-aroma --aroma-melodic-dimensionality -100 \
+	--ignore-aroma-denoising-errors \
+	--output-space "${OUTPUT_SPACE}" \
+	--write-graph \
+	--template-resampling-grid "${OUTPUT_GRID_REFERENCE}" \
+	--ignore "${IGNORE_OPTS}" \
+	--fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
+	--longitudinal \
+	--fs-no-reconall --no-freesurfer \
+	-w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}"
     
     singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
 	--participant_label ${sub} \
         --bold2t1w-dof ${BOLD2T1DOF} \
-        --force-bbr \
-        --use-aroma --aroma-melodic-dimensionality -75 \
+        --use-aroma --aroma-melodic-dimensionality -100 \
         --ignore-aroma-denoising-errors \
         --output-space "${OUTPUT_SPACE}" \
         --write-graph \
@@ -109,6 +120,7 @@ do
         --ignore "${IGNORE_OPTS}" \
         --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
         --longitudinal \
+        --fs-no-reconall --no-freesurfer \
         -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}
 
     # for task in ${TASKID[@]}

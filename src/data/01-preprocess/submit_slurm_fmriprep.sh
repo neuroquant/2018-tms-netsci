@@ -1,6 +1,6 @@
 #!/bin/sh
 
-for sub in $(seq 1 1)
+for sub in $(seq 1 5)
 do
     sbatch -p aetkin,owners,normal --array=$sub -N 1 -n 16 --mem=64000 -t 8:00:00 --begin=now+${sub}minute run_fmriprep.sh
 
