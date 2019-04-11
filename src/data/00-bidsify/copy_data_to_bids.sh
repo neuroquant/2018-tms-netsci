@@ -3,7 +3,7 @@
 ############################################
 # Specify Input/Output Locations
 ############################################
-BASEDIR=${PI_SCRATCH}/jiang/CausalConnectome
+BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome/rawdata
 STUDYDIR=(structural rest tmsfmri)
 OUTPUTDIR=${PI_SCRATCH}/COMET/CausalConnectome
 mkdir -p ${OUTPUTDIR}/BIDS
@@ -44,6 +44,7 @@ do
 
     # mkdir & link
     mkdir -p ${SUBJDIR}/${BIDS_SESSION}/anat
+    unlink ${SUBJDIR}/${BIDS_SESSION}/anat/$anat_fname
     ln -s ${BASEDIR}/${IMG_DIR}/*${sub}*${IMG_TYPE}.nii.gz ${SUBJDIR}/${BIDS_SESSION}/anat/$anat_fname
 
     #################################
@@ -58,6 +59,7 @@ do
     #echo "copy to ${SUBJDIR}/${BIDS_SESSION}/func/$rest_fname"
     # mkdir & link
     mkdir -p ${SUBJDIR}/${BIDS_SESSION}/func
+    unlink ${SUBJDIR}/${BIDS_SESSION}/func/$rest_fname
     ln -s ${BASEDIR}/${IMG_TYPE}/*${sub}*${TASK}.nii.gz ${SUBJDIR}/${BIDS_SESSION}/func/$rest_fname
 
 done
@@ -95,7 +97,7 @@ do
 		ls ${BASEDIR}/${IMG_TYPE}/${FR_TMS_SP_SITES[$siteno]}/*${sub}_*${FR_TMS_SP_SITES[$siteno]}*.nii.gz
 		func_fname=sub-${sub}_ses-${SES_NO}_task-${TASK}${TO_TMS_SP_SITES[$siteno]}_run-${RUN_NO}_bold.nii.gz
 		echo "Copying to ${SUBJDIR}/${BIDS_SESSION}/func/$func_fname"
-
+		unlink ${SUBJDIR}/${BIDS_SESSION}/func/$func_fname
 		ln -s ${BASEDIR}/${IMG_TYPE}/${FR_TMS_SP_SITES[$siteno]}/*${sub}_*${FR_TMS_SP_SITES[$siteno]}*.nii.gz ${SUBJDIR}/${BIDS_SESSION}/func/$func_fname
 	done
 done
@@ -118,10 +120,10 @@ do
 	SES_NO=d${DAY_NO}
 	BIDS_SESSION=ses-${SES_NO}
 	
-	IMG_TYPE=taskfmri/msit
-	TASKNAME=multisourceintereference
+	IMG_TYPE=mid
+	TASKNAME=monetaryincentivedelay
 	TASKS=(colorID_r1 colorID_r2 emoconflict mid msit)
-	TASK=msit
+	TASK=mid
 	mkdir -p ${SUBJDIR}/${BIDS_SESSION}/
 	mkdir -p ${SUBJDIR}/${BIDS_SESSION}/func
 
@@ -130,6 +132,7 @@ do
     ls ${BASEDIR}/${IMG_TYPE}/*${sub}*${TASK}.nii.gz
 	echo "Copying to ${SUBJDIR}/${BIDS_SESSION}/func/$func_fname"
 
+	unlink ${SUBJDIR}/${BIDS_SESSION}/func/$func_fname
 	ln -s ${BASEDIR}/${IMG_TYPE}/*${sub}*${TASK}.nii.gz ${SUBJDIR}/${BIDS_SESSION}/func/$func_fname
 	
 	# for (( taskno=0; taskno<${#TASKS[@]}; taskno++))
@@ -143,3 +146,6 @@ do
 done
 # Remove broken links
 for f in `find -L ${OUTPUTDIR} -maxdepth 4 -type l`; do unlink $f; done
+echo "find -L ${OUTPUTDIR} -maxdepth 4  -type d -empty -print"
+find -L ${OUTPUTDIR} -maxdepth 4  -type d -empty -delete
+

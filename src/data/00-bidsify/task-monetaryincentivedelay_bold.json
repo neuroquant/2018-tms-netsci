@@ -1,0 +1,17 @@
+{    
+    "Modality": "MR",
+    "Manufacturer": "GE MEDICAL SYSTEMS",
+    "ManufacturersModelName": "DISCOVERY MR750",
+    "ReceiveCoilName": "8HRBRAIN",
+    "MagneticFieldStrength": 3.0,
+    "InstitutionName": "Stanford_Lucas_Center",
+    "PulseSequenceType": "Gradient Echo Spiral In and Out",
+    "SequenceName": "spiralio",
+    "RepetitionTime": 2.0,
+    "SliceThickness": 4,
+    "EchoTime": 0.3,
+    "InversionTime": 0.0,
+    "FlipAngle": 80,
+    "CogAtlasID":"http://www.cognitiveatlas.org/task/id/trm_4f23fc8c42d28/",
+    "TaskName": "monetaryincentivedelay"
+}
