@@ -79,6 +79,7 @@ OUTPUT_GRID_REFERENCE=${HOME}/ANALYSIS/pipelines/sherlock-preproc/2017-preproc-t
 ########################
 # 04-09-2019: Removed --force-bbr so that subjects with bad registrations default to 
 # no bbr.
+# 04-10-2019: Removed --write-graph so that running subjects in parallel doesn't full. Need to run --write-graph in the end. 
 #########################
 #     Preliminaries     #
 #########################
@@ -101,7 +102,6 @@ do
 	--use-aroma --aroma-melodic-dimensionality -100 \
 	--ignore-aroma-denoising-errors \
 	--output-space "${OUTPUT_SPACE}" \
-	--write-graph \
 	--template-resampling-grid "${OUTPUT_GRID_REFERENCE}" \
 	--ignore "${IGNORE_OPTS}" \
 	--fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
@@ -115,7 +115,6 @@ do
         --use-aroma --aroma-melodic-dimensionality -100 \
         --ignore-aroma-denoising-errors \
         --output-space "${OUTPUT_SPACE}" \
-        --write-graph \
         --template-resampling-grid "${OUTPUT_GRID_REFERENCE}" \
         --ignore "${IGNORE_OPTS}" \
         --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
