@@ -14,4 +14,6 @@ do
 
     ls /scratch/groups/aetkin/COMET/CausalConnectome/derivatives/fmriprep-fsl/fmriprep/sub-*/ses-d2/func/*MELODIC*.tsv | grep ${TMS_SITE} | sed -e "s?.*func/sub-??g" | sed -e "s?_ses-d2.*??g" > ${TMS_SITE}_ica.txt
 
+    grep -v -F -f  ${TMS_SITE}_ica.txt ${TMS_SITE}_bids.txt > ${TMS_SITE}_missing.txt
+
 done
