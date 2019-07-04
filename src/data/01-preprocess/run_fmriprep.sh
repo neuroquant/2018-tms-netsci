@@ -5,13 +5,14 @@
 BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome
 BIDSDIR=${OAK}/projects/causcon-bids.v1.0
 #OUTPUTDIR=${BASEDIR}/derivatives/fmriprep
-OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsl
+OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsf
 WORKDIR=${BASEDIR}/work/fmriprep
 ##########################
 # Singularity containers #
 ##########################
 # FPREP_IMG=${PI_HOME}/singularity_images/poldracklab_fmriprep_1.2.5-2018-12-04-2ef6b23ede2a.img
-FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
+FPREP_IMG=${PI_HOME}/singularity_images/poldracklab_fmriprep_1.4.0-2019-05-15-2870a0e4efbf.simg
+# FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
 ##########################
 # usage: fmriprep [-h] [--version] [--skip_bids_validation]
 #                [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
@@ -42,7 +43,7 @@ FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
 #########################
 # Preprocessing Options #
 #########################
-## SLURM_ARRAY_TASK_ID=1
+SLURM_ARRAY_TASK_ID=1
 SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects_tms.txt)
 ## Find missing subjects from ica list
 # grep -v -F -f  LpMFG_ica.txt LpMFG_bids.txt > LpMFG_missing.txt
@@ -74,12 +75,15 @@ OUTPUT_GRID_REFERENCE=${HOME}/ANALYSIS/pipelines/sherlock-preproc/2017-preproc-t
 # --skip_bids_validation
 # --task-id ${TASK_TMS}
 # --force-no-bbr
+# --output-spaces OUTPUT_SPACES [OUTPUT_SPACES ...]
+#                        Standard and non-standard spaces to resample anatomical and functional images to. Standard spaces may be specified by the form ``<TEMPLATE>[:res-<resolution>][:cohort-<label>][...]``, where ``<TEMPLATE>`` is a keyword (valid keywords: "MNI152Lin", "MNI152NLin2009cAsym", "MNI152NLin6Asym", "MNI152NLin6Sym", "NKI", "OASIS30ANTs", "PNC", "fsLR", "fsaverage") or path pointing to a user-supplied template, and may be followed by optional, colon-separated parameters. Non-standard spaces (valid keywords: anat, T1w, run, func, sbref, fsnative) imply specific orientations and sampling grids
 ########################
 #.    Updates          #
 ########################
 # 04-09-2019: Removed --force-bbr so that subjects with bad registrations default to 
 # no bbr.
 # 04-10-2019: Removed --write-graph so that running subjects in parallel doesn't full. Need to run --write-graph in the end. 
+# 06-15-2019: Now supported MNI152NLin6Sym, MNI152NLin6Asym:res-2 (2mm isotropic resolution), original resolution MNI152NLin2009cAsym, 
 #########################
 #     Preliminaries     #
 #########################
@@ -106,22 +110,39 @@ do
 	--ignore "${IGNORE_OPTS}" \
 	--fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
 	--longitudinal \
-	--fs-no-reconall --no-freesurfer \
+	--fs-no-reconall --no-freesurfer (EDIT: Freesurfer now on)\
 	-w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}"
     
-    singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
+
+    ## v1.2.3
+    ##--------
+    #     singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant --skip-bids-validation --boilerplate\
+    # --participant_label ${sub} \
+    #         --bold2t1w-dof ${BOLD2T1DOF} \
+    #         --use-aroma --aroma-melodic-dimensionality -100 \
+    #         --ignore-aroma-denoising-errors \
+    #         --output-space "${OUTPUT_SPACE}" \
+    #         --template-resampling-grid "${OUTPUT_GRID_REFERENCE}" \
+    #         --ignore "${IGNORE_OPTS}" \
+    #         --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
+    #         --longitudinal \
+    #         --fs-no-reconall --no-freesurfer\
+    #         -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}
+
+
+    ## v1.4
+    ##-------
+    singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant --skip-bids-validation \
 	--participant_label ${sub} \
         --bold2t1w-dof ${BOLD2T1DOF} \
-        --use-aroma --aroma-melodic-dimensionality -100 \
         --ignore-aroma-denoising-errors \
-        --output-space "${OUTPUT_SPACE}" \
-        --template-resampling-grid "${OUTPUT_GRID_REFERENCE}" \
+        --output-spaces "MNI152NLin2009cAsym anat" \
         --ignore "${IGNORE_OPTS}" \
         --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
         --longitudinal \
-        --fs-no-reconall --no-freesurfer \
         -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}
 
+    
     # for task in ${TASKID[@]}
     # do
     #     echo "Task specific ${task}"
