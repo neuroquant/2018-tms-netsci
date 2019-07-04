@@ -1,15 +1,16 @@
 #!/bin/sh
 
 export BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome
-export DERIVATIVES=${BASEDIR}/derivatives/denoiser
-export ROITS_DIR=${BASEDIR}/derivatives/denoiser
+export DERIVATIVES=${BASEDIR}/derivatives/fmriprep-fsf/denoiser
+export ROITS_DIR=${BASEDIR}/derivatives/fmriprep-fsf/denoiser
 
 export VIRTUALENVWRAPPER_PYTHON=/share/software/user/open/python/3.6.1/bin/python3
 alias source_venv='source ~/.local/bin/virtualenvwrapper.sh'
 source_venv
 workon ni-denoise
 
-SUBJID=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ../00-bidsify/subjects_tms_part2.txt)
+SLURM_ARRAY_TASK_ID=1
+SUBJID=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ../00-bidsify/subjects.txt)
 #SUBJID=(NTHC1003 NTHC1009)
 
 for subjno in ${SUBJID}

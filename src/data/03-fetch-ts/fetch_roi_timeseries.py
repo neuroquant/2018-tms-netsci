@@ -37,7 +37,7 @@ print(subject)
 cleandir = os.path.join(os.environ.get('PI_SCRATCH'),
                         "COMET",
                         "CausalConnectome",
-                        "derivatives/denoiser/",
+                        "derivatives/fmriprep-fsf/denoiser/",
                         "sub-%s"%subject)
 
 keys = os.listdir(cleandir)
@@ -75,17 +75,17 @@ for key in keys:
     atlasfile4 = os.path.join(os.environ.get("PI_HOME"),"resources","parcellations","MNI","2mm",
               'Shen268.nii.gz')             
     subcort_atlasfile = os.path.join(os.environ.get("PI_HOME"),"resources",
- 'Choi_JNeurophysiol12_MNI152/Choi2012_7Networks_MNI152_FreeSurferConformed2mm_TightMask.nii.gz')
+ 'Choi_JNeurophysiol12_MNI152/Choi2012_7Networks_MNI152_FreeSurferConformed1mm_TightMask.nii.gz')
     cerebellum_atlasfile = os.path.join(os.environ.get("PI_HOME"),"resources",
- 'Buckner_JNeurophysiol11_MNI152/Buckner2011_7Networks_MNI152_FreeSurferConformed2mm_TightMask.nii.gz')
+ 'Buckner_JNeurophysiol11_MNI152/Buckner2011_7Networks_MNI152_FreeSurferConformed1mm_TightMask.nii.gz')
 
     # extract signals
-    masker = NiftiLabelsMasker(labels_img=atlasfile,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
-    masker2 = NiftiLabelsMasker(labels_img=atlasfile2,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
-    masker3 = NiftiLabelsMasker(labels_img=atlasfile3,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5) 
-    masker4 = NiftiLabelsMasker(labels_img=atlasfile4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)        
-    subcortmasker = NiftiMapsMasker(maps_img=subcort_atlasfile,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
-    cerebellummasker = NiftiMapsMasker(maps_img=cerebellum_atlasfile,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
+    masker = NiftiLabelsMasker(labels_img=atlasfile,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
+    masker2 = NiftiLabelsMasker(labels_img=atlasfile2,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
+    masker3 = NiftiLabelsMasker(labels_img=atlasfile3,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5) 
+    masker4 = NiftiLabelsMasker(labels_img=atlasfile4,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)        
+    masker5 = NiftiLabelsMasker(labels_img=subcort_atlasfile,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
+    masker6 = NiftiLabelsMasker(labels_img=cerebellum_atlasfile,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
 
 
     # save parcellated time series
@@ -97,25 +97,52 @@ for key in keys:
         pass
         
     ####### Atlas 1 ########
-    time_series = masker.fit_transform(imgfile)
+    time_series = masker.fit_transform(imgfile, 
+                                        confounds=None)
     outfile = os.path.join(cleandir,key.replace('.nii.gz','')+'_roits',
                                     key.replace('.nii.gz','')+"_Schaefer200_Yeo7Networks.csv")
     np.savetxt(outfile,time_series)
     ####### Atlas 2 ########
-    time_series2 = masker2.fit_transform(imgfile)
+    time_series2 = masker2.fit_transform(imgfile,
+                                        confounds=None)
     outfile2 = os.path.join(cleandir,key.replace('.nii.gz','')+'_roits',
                                     key.replace('.nii.gz','')+"_Gordon333.csv")
     np.savetxt(outfile2,time_series2)
     ####### Atlas 3 ########
-    time_series3 = masker3.fit_transform(imgfile)
+    time_series3 = masker3.fit_transform(imgfile,
+                                        confounds=None)
     outfile3 = os.path.join(cleandir,key.replace('.nii.gz','')+'_roits',
                                     key.replace('.nii.gz','')+"_Schaefer100_Yeo7Networks.csv")
     np.savetxt(outfile3,time_series3)
     ####### Atlas 4 ########
-    time_series4 = masker4.fit_transform(imgfile)
+    time_series4 = masker4.fit_transform(imgfile,
+                                        confounds=None)
     outfile4 = os.path.join(cleandir,key.replace('.nii.gz','')+'_roits',
                                     key.replace('.nii.gz','')+"_Shen268.csv")
     np.savetxt(outfile4,time_series4)
+    
+    ####### Atlas 5 ########
+    time_series5 = masker5.fit_transform(imgfile,
+                                        confounds=None)
+    outfile5 = os.path.join(cleandir,key.replace('.nii.gz','')+'_roits',
+                                    key.replace('.nii.gz','')+"_Choi7.csv")
+    np.savetxt(outfile5,time_series5)
+    
+    ####### Atlas 6 ########
+    time_series6 = masker6.fit_transform(imgfile,
+                                        confounds=None)
+    outfile6 = os.path.join(cleandir,key.replace('.nii.gz','')+'_roits',
+                                    key.replace('.nii.gz','')+"_Buckner7.csv")
+    np.savetxt(outfile6,time_series6)
+    
+    #####################################
+    # Points to remember
+    # smoothing_fwhm: float, optional
+    #   If smoothing_fwhm is not None, it gives the full-width half maximum in millimeters of the spatial smoothing to apply to the signal.
+    # 
+    # resampling_target: {“data”, “labels”, None}, optional. 
+    # The default option is that labels are resampled to the data. 
+
     # ####### Atlas Sub-cortical ########
     # try:
     #     time_series_subcort = subcortmasker.fit_transform(imgfile)
