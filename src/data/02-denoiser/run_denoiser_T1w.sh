@@ -3,7 +3,7 @@
 # Input and output directories #
 ################################
 BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome
-BIDSDIR=${BASEDIR}/derivatives/fmriprep/fmriprep
+BIDSDIR=${BASEDIR}/derivatives/fmriprep-fsl/fmriprep
 OUTPUTDIR=${BASEDIR}/derivatives/denoiser
 ##########################
 DENOISE="python denoiser/run_denoise.py"
@@ -21,7 +21,7 @@ workon ni-denoise
 TASKS=(singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA)
 
 
-CONFOUND_NAMES="csf	white_matter    std_dvars	framewise_displacement  a_comp_cor_00	a_comp_cor_01	a_comp_cor_02	a_comp_cor_03	a_comp_cor_04	a_comp_cor_05	cosine00	cosine01	cosine02	cosine03	cosine04 trans_x	trans_y	trans_z	rot_x	rot_y	rot_z"
+CONFOUND_NAMES="csf	white_matter    std_dvars   framewise_displacement   t_comp_cor_00   t_comp_cor_01   t_comp_cor_02   t_comp_cor_03   t_comp_cor_04   t_comp_cor_05  a_comp_cor_00	a_comp_cor_01	a_comp_cor_02	a_comp_cor_03	a_comp_cor_04	a_comp_cor_05	cosine00	cosine01	cosine02	cosine03	cosine04 trans_x	trans_y	trans_z	rot_x	rot_y	rot_z"
 
 for (( taskno=0; taskno<${#TASKS[@]}; taskno++))
 do

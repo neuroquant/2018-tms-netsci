@@ -3,8 +3,10 @@
 # Input and output directories #
 ################################
 BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome
-BIDSDIR=${BASEDIR}/derivatives/fmriprep/fmriprep
-OUTPUTDIR=${BASEDIR}/derivatives/denoiser
+BIDSDIR=${BASEDIR}/derivatives/fmriprep-fsl/fmriprep
+BIDSDIR2=${BASEDIR}/derivatives/fmriprep-fsf/fmriprep
+OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsf/denoiser
+
 ##########################
 DENOISE="python denoiser/run_denoise.py"
 ##########################
@@ -18,10 +20,10 @@ workon ni-denoise
 
 # TASKS=(rest multisourceinterference singlepulseLaMFG singlepulseLFp singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA)
 
-TASKS=(singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA)
+TASKS=(rest singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA)
 
 
-CONFOUND_NAMES="csf	white_matter    std_dvars	framewise_displacement  a_comp_cor_00	a_comp_cor_01	a_comp_cor_02	a_comp_cor_03	a_comp_cor_04	a_comp_cor_05	cosine00	cosine01	cosine02	cosine03	cosine04 trans_x	trans_y	trans_z	rot_x	rot_y	rot_z"
+CONFOUND_NAMES="csf	white_matter    std_dvars   framewise_displacement   t_comp_cor_00   t_comp_cor_01   t_comp_cor_02   t_comp_cor_03   t_comp_cor_04   t_comp_cor_05  a_comp_cor_00	a_comp_cor_01	a_comp_cor_02	a_comp_cor_03	a_comp_cor_04	a_comp_cor_05	cosine00	cosine01	cosine02	cosine03	cosine04 trans_x	trans_y	trans_z	rot_x	rot_y	rot_z"
 
 for (( taskno=0; taskno<${#TASKS[@]}; taskno++))
 do
@@ -30,7 +32,7 @@ do
     echo ${TMS_TASK}
     
     # thefile=$(find ${BIDSDIR}/${SUBJECT} -maxdepth 4 -type f -name "*MNI152*preproc_bold.nii.gz*" -printf "%T@ %p " | sort -k 1n | tail -n 1)
-    thefile=$(find ${BIDSDIR}/${SUBJECT} -maxdepth 4 -type f -name "*${TMS_TASK}*MNI152*preproc_bold.nii.gz*" | sort -k 1n | tail -n 20)
+    thefile=$(find ${BIDSDIR2}/${SUBJECT} -maxdepth 4 -type f -name "*${TMS_TASK}*MNI152*preproc_bold.nii.gz*" | sort -k 1n | tail -n 20)
 
     # echo "The list of files:
     # $thefile"
