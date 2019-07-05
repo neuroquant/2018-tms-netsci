@@ -5,14 +5,14 @@
 BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome
 BIDSDIR=${OAK}/projects/causcon-bids.v1.0
 #OUTPUTDIR=${BASEDIR}/derivatives/fmriprep
-OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsf
+OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsl
 WORKDIR=${BASEDIR}/work/fmriprep
 ##########################
 # Singularity containers #
 ##########################
 # FPREP_IMG=${PI_HOME}/singularity_images/poldracklab_fmriprep_1.2.5-2018-12-04-2ef6b23ede2a.img
-FPREP_IMG=${PI_HOME}/singularity_images/poldracklab_fmriprep_1.4.0-2019-05-15-2870a0e4efbf.simg
-# FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
+# FPREP_IMG=${PI_HOME}/singularity_images/poldracklab_fmriprep_1.4.0-2019-05-15-2870a0e4efbf.simg
+FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
 ##########################
 # usage: fmriprep [-h] [--version] [--skip_bids_validation]
 #                [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
@@ -100,47 +100,46 @@ do
     echo "${SCRATCHDIR}"
     echo "${WORKDIR}"
     
-    echo "singularity run ${FPREP_IMG} ${BIDSDIR} ${OUTPUTDIR} participant 	--boilerplate \
+    echo "singularity run ${FPREP_IMG} ${BIDSDIR} ${OUTPUTDIR} participant  \
 	--participant_label ${sub} \
 	--bold2t1w-dof ${BOLD2T1DOF} \
 	--use-aroma --aroma-melodic-dimensionality -100 \
 	--ignore-aroma-denoising-errors \
 	--output-space "${OUTPUT_SPACE}" \
-	--template-resampling-grid "${OUTPUT_GRID_REFERENCE}" \
+	--template-resampling-grid "native" \
 	--ignore "${IGNORE_OPTS}" \
 	--fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
 	--longitudinal \
-	--fs-no-reconall --no-freesurfer (EDIT: Freesurfer now on)\
+	--fs-no-reconall (EDIT: Freesurfer bbr now on)\
 	-w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}"
     
 
     ## v1.2.3
     ##--------
-    #     singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant --skip-bids-validation --boilerplate\
-    # --participant_label ${sub} \
-    #         --bold2t1w-dof ${BOLD2T1DOF} \
-    #         --use-aroma --aroma-melodic-dimensionality -100 \
-    #         --ignore-aroma-denoising-errors \
-    #         --output-space "${OUTPUT_SPACE}" \
-    #         --template-resampling-grid "${OUTPUT_GRID_REFERENCE}" \
-    #         --ignore "${IGNORE_OPTS}" \
-    #         --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
-    #         --longitudinal \
-    #         --fs-no-reconall --no-freesurfer\
-    #         -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}
+        singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
+    --participant_label ${sub} \
+            --bold2t1w-dof ${BOLD2T1DOF} \
+            --use-aroma --aroma-melodic-dimensionality -100 \
+            --ignore-aroma-denoising-errors \
+            --output-space "${OUTPUT_SPACE}" \
+            --template-resampling-grid native \
+            --ignore "${IGNORE_OPTS}" \
+            --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
+            --longitudinal \
+            -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}
 
 
     ## v1.4
     ##-------
-    singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant --skip-bids-validation \
-	--participant_label ${sub} \
-        --bold2t1w-dof ${BOLD2T1DOF} \
-        --ignore-aroma-denoising-errors \
-        --output-spaces "MNI152NLin2009cAsym anat" \
-        --ignore "${IGNORE_OPTS}" \
-        --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
-        --longitudinal \
-        -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}
+    #     singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant --skip-bids-validation \
+    # --participant_label ${sub} \
+    #         --bold2t1w-dof ${BOLD2T1DOF} \
+    #         --ignore-aroma-denoising-errors \
+    #         --output-spaces "MNI152NLin2009cAsym anat" \
+    #         --ignore "${IGNORE_OPTS}" \
+    #         --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
+    #         --longitudinal \
+    #         -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}
 
     
     # for task in ${TASKID[@]}
