@@ -4,8 +4,8 @@
 ################################
 BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome
 BIDSDIR=${BASEDIR}/derivatives/fmriprep-fsl/fmriprep
-BIDSDIR2=${BASEDIR}/derivatives/fmriprep-fsf/fmriprep
-OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsf/denoiser
+BIDSDIR2=${BASEDIR}/derivatives/fmriprep-fsl/fmriprep
+OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsl/denoiser
 
 ##########################
 DENOISE="python denoiser/run_denoise.py"
@@ -18,9 +18,9 @@ alias source_venv='source ~/.local/bin/virtualenvwrapper.sh'
 source_venv
 workon ni-denoise
 
-# TASKS=(rest multisourceinterference singlepulseLaMFG singlepulseLFp singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA)
+# TASKS=(rest multisourceinterference monetaryincentivedelay singlepulseLaMFG singlepulseLFp singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA)
 
-TASKS=(rest singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA)
+TASKS=(rest multisourceinterference monetaryincentivedelay singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA)
 
 
 CONFOUND_NAMES="csf	white_matter    std_dvars   framewise_displacement   t_comp_cor_00   t_comp_cor_01   t_comp_cor_02   t_comp_cor_03   t_comp_cor_04   t_comp_cor_05  a_comp_cor_00	a_comp_cor_01	a_comp_cor_02	a_comp_cor_03	a_comp_cor_04	a_comp_cor_05	cosine00	cosine01	cosine02	cosine03	cosine04 trans_x	trans_y	trans_z	rot_x	rot_y	rot_z"
