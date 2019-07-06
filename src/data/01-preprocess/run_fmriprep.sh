@@ -3,7 +3,7 @@
 # Input and output directories #
 ################################
 BASEDIR=${PI_SCRATCH}/COMET/CausalConnectome
-BIDSDIR=${OAK}/projects/causcon-bids.v1.0
+BIDSDIR=${OAK}/projects/causcon-bids.v1.1
 #OUTPUTDIR=${BASEDIR}/derivatives/fmriprep
 OUTPUTDIR=${BASEDIR}/derivatives/fmriprep-fsl
 WORKDIR=${BASEDIR}/work/fmriprep
@@ -43,8 +43,8 @@ FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
 #########################
 # Preprocessing Options #
 #########################
-SLURM_ARRAY_TASK_ID=1
-SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects_tms.txt)
+#SLURM_ARRAY_TASK_ID=1
+SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects.txt)
 ## Find missing subjects from ica list
 # grep -v -F -f  LpMFG_ica.txt LpMFG_bids.txt > LpMFG_missing.txt
 # SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" LpMFG_missing.txt)
