@@ -1,13 +1,22 @@
 #!/bin/sh
 
 STUDY_DIR=CausalConnectome
-BACKUP_DIR=${PI_SCRATCH}/COMET/${STUDY_DIR}/derivatives/fmriprep
+FPREP_DIR=${PI_SCRATCH}/COMET/${STUDY_DIR}/derivatives/fmriprep-fsl/fmriprep
+FSF_DIR=${PI_SCRATCH}/COMET/${STUDY_DIR}/derivatives/fmriprep-fsl/freesurfer
+DERIVATIVES=${PI_SCRATCH}/COMET/${STUDY_DIR}/derivatives/fmriprep-fsl/denoiser
 
 # rclone sync --copy-links --update ${BACKUP_DIR}/derivatives drive:Data/${STUDY_DIR}/derivatives
 #
-echo "rclone copy --update ${BACKUP_DIR}/fmriprep drive:Data/${STUDY_DIR}/derivatives/fmriprep"
-#rclone copy -v --update ${BACKUP_DIR}/fmriprep drive:Data/${STUDY_DIR}/derivatives/fmriprep
-rclone copy -v --update ${PI_SCRATCH}/COMET/${STUDY_DIR}/derivatives/denoiser drive:Data/${STUDY_DIR}/derivatives/denoiser
+
+# echo "rclone copy -v --update ${DERIVATIVES} drive:Data/${STUDY_DIR}/derivatives/fmriprep-v1.2.3/denoiser"
+# rclone copy -v --update ${DERIVATIVES} drive:Data/${STUDY_DIR}/derivatives/fmriprep-v1.2.3/denoiser
+
+echo "rclone copy --update --filter "- *smoothAROMAnonaggr_bold.nii.gz.nii.gz" ${FPREP_DIR} box:Stanford/datasets/CausalConnectome/derivatives/fmriprep-v1.2.3/fmriprep"
+#rclone copy -v --update --filter "- *smoothAROMAnonaggr_bold.nii.gz.nii.gz" ${FPREP_DIR} drive:Data/${STUDY_DIR}/derivatives/fmriprep-v1.2.3/fmriprep
+rclone copyto -v --update --filter "- *smoothAROMAnonaggr_bold.nii.gz.nii.gz" ${FPREP_DIR} box:Stanford/datasets/CausalConnectome/derivatives/fmriprep-v1.2.3
+
+#echo "rclone copy --update ${FSF_DIR}  drive:Data/${STUDY_DIR}/derivatives/fmriprep-v1.2.3/freesurfer"
+#rclone copy -v --update ${FSF_DIR} drive:Data/${STUDY_DIR}/derivatives/fmriprep-v1.2.3/freesurfer
 
 #
 # rclone copy --checksum --update ${BACKUP_DIR}/derivatives/cpac drive:Data/${STUDY_DIR}/derivatives/cpac

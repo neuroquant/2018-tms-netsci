@@ -44,11 +44,12 @@ FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
 # Preprocessing Options #
 #########################
 #SLURM_ARRAY_TASK_ID=1
-SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects.txt)
+SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects_missing.txt)
 ## Find missing subjects from ica list
 # grep -v -F -f  LpMFG_ica.txt LpMFG_bids.txt > LpMFG_missing.txt
 # SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" LpMFG_missing.txt)
-TASKID=(rest multisourceinterference)
+TASKID=(monetaryincentivedelay)
+# multisourceinterference
 TASK_TMS=(singlepulseLaMFG)
 # singlepulseLaMFG singlepulseLFp singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp
 # singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp
@@ -100,24 +101,27 @@ do
     echo "${SCRATCHDIR}"
     echo "${WORKDIR}"
     
-    echo "singularity run ${FPREP_IMG} ${BIDSDIR} ${OUTPUTDIR} participant  \
-	--participant_label ${sub} \
-	--bold2t1w-dof ${BOLD2T1DOF} \
-	--use-aroma --aroma-melodic-dimensionality -100 \
-	--ignore-aroma-denoising-errors \
-	--output-space "${OUTPUT_SPACE}" \
-	--template-resampling-grid "native" \
-	--ignore "${IGNORE_OPTS}" \
-	--fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
-	--longitudinal \
-	--fs-no-reconall (EDIT: Freesurfer bbr now on)\
-	-w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}"
+    CMD_OPTS="${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
+            --participant_label ${sub} \
+            -t ${TASKID} \
+            --bold2t1w-dof ${BOLD2T1DOF} \
+            --use-aroma --aroma-melodic-dimensionality -100 \
+            --ignore-aroma-denoising-errors \
+            --output-space "${OUTPUT_SPACE}" \
+            --template-resampling-grid native \
+            --ignore "${IGNORE_OPTS}" \
+            --fs-license-file /share/software/user/open/freesurfer/6.0.0/license.txt \
+            --longitudinal \
+            -w ${WORKDIR} --n_cpus ${N_CPUS} --omp-nthreads 4 --mem_mb ${MEM_MB}"
+    
+    echo "singularity run ${CMD_OPTS}"
     
 
     ## v1.2.3
     ##--------
         singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
-    --participant_label ${sub} \
+            --participant_label ${sub} \
+            -t ${TASKID} \
             --bold2t1w-dof ${BOLD2T1DOF} \
             --use-aroma --aroma-melodic-dimensionality -100 \
             --ignore-aroma-denoising-errors \
