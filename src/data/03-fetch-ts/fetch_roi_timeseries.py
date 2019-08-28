@@ -37,7 +37,7 @@ print(subject)
 cleandir = os.path.join(os.environ.get('PI_SCRATCH'),
                         "COMET",
                         "CausalConnectome",
-                        "derivatives/fmriprep-fsf/denoiser/",
+                        "derivatives/fmriprep-fsl/denoiser/",
                         "sub-%s"%subject)
 
 keys = os.listdir(cleandir)
@@ -73,11 +73,13 @@ for key in keys:
     atlasfile3 = os.path.join(os.environ.get("PI_HOME"),"resources",
               'SchaeferYeo2018/MNI/Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz')
     atlasfile4 = os.path.join(os.environ.get("PI_HOME"),"resources","parcellations","MNI","2mm",
-              'Shen268.nii.gz')             
+              'Shen268.nii.gz')          
+    atlasfile5 = os.path.join(os.environ.get("PI_HOME"),"resources",
+    'SchaeferYeo2018/MNI/Schaefer2018_300Parcels_7Networks_order_FSLMNI152_2mm.nii.gz')
     subcort_atlasfile = os.path.join(os.environ.get("PI_HOME"),"resources",
- 'Choi_JNeurophysiol12_MNI152/Choi2012_7Networks_MNI152_FreeSurferConformed1mm_TightMask.nii.gz')
+ 'Choi_JNeurophysiol12_MNI152/Choi2012_7Networks_MNI152_FreeSurferConformed1mm_LooseMask.nii.gz')
     cerebellum_atlasfile = os.path.join(os.environ.get("PI_HOME"),"resources",
- 'Buckner_JNeurophysiol11_MNI152/Buckner2011_7Networks_MNI152_FreeSurferConformed1mm_TightMask.nii.gz')
+ 'Buckner_JNeurophysiol11_MNI152/Buckner2011_7Networks_MNI152_FreeSurferConformed1mm_LooseMask.nii.gz')
 
     # extract signals
     masker = NiftiLabelsMasker(labels_img=atlasfile,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
@@ -86,7 +88,7 @@ for key in keys:
     masker4 = NiftiLabelsMasker(labels_img=atlasfile4,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)        
     masker5 = NiftiLabelsMasker(labels_img=subcort_atlasfile,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
     masker6 = NiftiLabelsMasker(labels_img=cerebellum_atlasfile,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
-
+    masker7 = NiftiLabelsMasker(labels_img=atlasfile5,smoothing_fwhm=4,standardize=False,detrend=False,low_pass=None,high_pass=None,verbose=5)
 
     # save parcellated time series
     try:
@@ -114,6 +116,13 @@ for key in keys:
     outfile3 = os.path.join(cleandir,key.replace('.nii.gz','')+'_roits',
                                     key.replace('.nii.gz','')+"_Schaefer100_Yeo7Networks.csv")
     np.savetxt(outfile3,time_series3)
+    ####### Atlas 7 ########
+    time_series7 = masker7.fit_transform(imgfile,
+                                        confounds=None)
+    outfile7 = os.path.join(cleandir,key.replace('.nii.gz','')+'_roits',
+                                    key.replace('.nii.gz','')+"_Schaefer300_Yeo7Networks.csv")
+    np.savetxt(outfile7,time_series7)
+    
     ####### Atlas 4 ########
     time_series4 = masker4.fit_transform(imgfile,
                                         confounds=None)
