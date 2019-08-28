@@ -22,7 +22,7 @@ function [T Tperm results] = permute_after_bootstrap_edge_conductance(opts)
         methodname = 'corr';
         networktype = 'partialcorr';
         metrictype = 'edge';
-        ATLAS = 'SchaeferYeo100';
+        ATLAS = 'Schaefer100_Yeo7';
         
     elseif nargin>=1
         Cii=opts.Ci(1);
@@ -34,12 +34,12 @@ function [T Tperm results] = permute_after_bootstrap_edge_conductance(opts)
     end
     
     switch ATLAS
-    case 'SchaeferYeo100'
+    case {'SchaeferYeo100', 'Schaefer100_Yeo7'}
         community_tbl = readtable('Schaefer100_Yeo7_labels.csv');
         %communities = unique(community_tbl.communityno);
         %regexprep(communities,{'SomMot','DorsAttn','SalVentAttn','Cont','Default'},...
         %                        {'SMN','DAN','VAN','FPN','DMN'});
-    case 'SchaeferYeo200'
+    case {'SchaeferYeo200', 'Schaefer200_Yeo7'}
         community_tbl = readtable('Schaefer200_Yeo7_labels.csv');
     end
     communities = {'Vis','SMN','DAN','VAN','Limbic','FPN','DMN'};
@@ -66,7 +66,8 @@ function [T Tperm results] = permute_after_bootstrap_edge_conductance(opts)
         
     end
 
-    DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS,'roitimeseries');
+    %DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS,'roitimeseries');
+    DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS);
     SAVEDIR = fullfile(DATADIR,'ggms',methodtype,metricname);
     mkdir(SAVEDIR)
     save([SAVEDIR filesep '/conductance_data.mat'],'C','labels','metrictype','methodtype','networktype');
@@ -74,7 +75,9 @@ function [T Tperm results] = permute_after_bootstrap_edge_conductance(opts)
 
     C = squeeze(C);
     results.C = C;
-    labels = regexprep(labels,'edge_conductance_','');
+    labels = regexprep(labels,{'edge_conductance_','ses-d2_task-singlepulse'}, ...
+                                {'',''})
+                                pause;
     labels2 = regexprep(labels,'_','.');   
     nConditions = 16;
     
@@ -299,7 +302,8 @@ function [C condition_labels] = collect_condition(methodtype,metricfun,ATLAS)
     %
     % methodtype = fullfile(['networktype_' methodname],[methodname '_conductance'])
     
-    DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS,'roitimeseries');
+    %DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS,'roitimeseries');
+    DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS);
 
     LOADDIR=fullfile(DATADIR,'ggms',methodtype);
 

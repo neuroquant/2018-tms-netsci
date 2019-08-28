@@ -4,8 +4,11 @@ function [files] = cc_fmri_edge_conductance()
     % 
     % 
     % 
-    ATLAS='Schaefer100_Yeo7';
-    DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS);
+    % ATLAS='Schaefer100_Yeo7';
+    % DATADIR=fullfile(getenv('CC_DATADIR_ALT'),ATLAS);
+    
+    ATLAS='SchaeferYeo100';
+    DATADIR=fullfile(getenv('CC_DATADIR'),ATLAS,'roitimeseries');
     
     methodname = 'corr';
     use_partial_correlation = true;
@@ -16,7 +19,7 @@ function [files] = cc_fmri_edge_conductance()
     end
     mkdir(SAVEDIR);
     
-    tms_filenames = dir(fullfile(DATADIR,'ggms',['networktype_' methodname],'*ggms*.mat'));
+    tms_filenames = dir(fullfile(DATADIR,'ggms',['networktype_' methodname],'*ggms*.mat'))
     tms_filenames = {tms_filenames.name};
     nconditions = length(tms_filenames);
     
@@ -124,8 +127,8 @@ function [files] = cc_fmri_edge_conductance()
                 save(fullfile(SAVEDIR,savefilename),'resampled','-append');
             end
         end
+        
         save(fullfile(SAVEDIR,savefilename),'resampled','-append');
-
         clear resampled;
     end
     

@@ -11,7 +11,7 @@ function [ggm_results Shat] = ggm_models()
     tms_filenames = dir(fullfile(DATADIR,'*.mat'));
     tms_filenames = {tms_filenames.name};
     nconditions = length(tms_filenames);
-    methodname = 'corr';
+    methodname = 'kernelcorr';
     SAVEDIR=fullfile(SAVEDIR,['networktype_' methodname]);
     mkdir(SAVEDIR);
 
@@ -104,6 +104,7 @@ function [Shat Xnorm] = get_cc_correlation_matrices(filename,varargin)
     end
     
     nTRs = 164;
+    filename
     confounddir = fullfile(getenv('CC_DATADIR_ALT'),'..','confounds');
     studydata = load(filename);
     studydata.condition
@@ -129,31 +130,33 @@ function [Shat Xnorm] = get_cc_correlation_matrices(filename,varargin)
     
     tms_covariate = readtable('cc_tms_ts_covariates.csv', ...
                     'ReadVariableNames',true,'Delimiter',',');
-    Runc = {};
-    if(isfield(tms_covariate,'onsets'))
-        R = tms_covariate.ts(find(tms_covariate.onsets));
-        Runc{1} = tms_covariate.onsets;
-        canhrf = getcanonicalhrf(.4,2.4);
-        Y = zeros(nTRs,length(Runc));
-        for ll=1:length(Runc)
-            Y(:,ll) = conv([zeros(length(canhrf)-1,1); Runc{ll}],canhrf,'valid');
-        end
-    elseif(any(strcmp(tms_covariate.Properties.VariableNames,'ITI_1')))
-        R = tms_covariate.ts(find(tms_covariate.ITI_1));
-        Runc{1} = tms_covariate.ITI_1;
-        Runc{2} = tms_covariate.ITI_2;
-        Runc{3} = tms_covariate.ITI_3;
-        Runc{4} = tms_covariate.ITI_4;
-        Runc{5} = tms_covariate.ITI_5;
-        Runc{6} = tms_covariate.ITI_6;
-        canhrf = getcanonicalhrf(.4,2.4);
-        Y = zeros(nTRs,length(Runc));
-        for ll=1:length(Runc)
-            Y(:,ll) = conv([zeros(length(canhrf)-1,1); Runc{ll}],canhrf,'valid');
-        end
-    else
-        warning('Could not find ITI information')
-    end 
+    tms_covariate.onsets = ((tms_covariate.ITI>=1) & (tms_covariate.ITI<=2))*1.0;      
+    tms_task = dlmread('cc_tms_task_covariate.csv');          
+    % Runc = {};
+    % if(isfield(tms_covariate,'onsets'))
+    %     R = tms_covariate.ts(find(tms_covariate.onsets));
+    %     Runc{1} = tms_covariate.onsets;
+    %     canhrf = getcanonicalhrf(.4,2.4);
+    %     Y = zeros(nTRs,length(Runc));
+    %     for ll=1:length(Runc)
+    %         Y(:,ll) = conv([zeros(length(canhrf)-1,1); Runc{ll}],canhrf,'valid');
+    %     end
+    % elseif(any(strcmp(tms_covariate.Properties.VariableNames,'ITI_1')))
+    %     R = tms_covariate.ts(find(tms_covariate.ITI_1));
+    %     Runc{1} = tms_covariate.ITI_1;
+    %     Runc{2} = tms_covariate.ITI_2;
+    %     Runc{3} = tms_covariate.ITI_3;
+    %     Runc{4} = tms_covariate.ITI_4;
+    %     Runc{5} = tms_covariate.ITI_5;
+    %     Runc{6} = tms_covariate.ITI_6;
+    %     canhrf = getcanonicalhrf(.4,2.4);
+    %     Y = zeros(nTRs,length(Runc));
+    %     for ll=1:length(Runc)
+    %         Y(:,ll) = conv([zeros(length(canhrf)-1,1); Runc{ll}],canhrf,'valid');
+    %     end
+    % else
+    %     warning('Could not find ITI information')
+    % end
     
     
     for cc=1:nsubjects
@@ -199,7 +202,7 @@ function [Shat Xnorm] = get_cc_correlation_matrices(filename,varargin)
         switch method
         case 'kernelcorr'
             Shat(:,:,cc) = ...
-                 kernel_correlation(XX,Xnorm,[Runc{:}]);
+                 kernel_correlation(XX,Xnorm, cat(2,Y,Y.^2));
         case 'weightedcorr'
             Shat(:,:,cc) = weighted_correlation(Xnorm,Y);
         otherwise
