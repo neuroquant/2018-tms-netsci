@@ -22,7 +22,7 @@ function [T Tperm results] = permute_after_bootstrap_persistent_conductance(C)
     metricname = [communities{Cii} '-' communities{Cjj}]
     
     methodname = 'corr';
-    networktype = 'partialcorr'
+    networktype = 'corr'
     metrictype = 'edge';
 
     switch metrictype

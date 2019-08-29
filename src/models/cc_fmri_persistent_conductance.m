@@ -20,7 +20,7 @@ function metrics = cc_fmri_persistent_conductance()
     nconditions = length(tms_filenames);
     
     % Load Community Labels for ROIs
-    community = readtable('Schaefer200_Yeo7_labels.csv');
+    community = readtable('Schaefer100_Yeo7_labels.csv');
     Ci = community.communityno;
     
     resampled = {};

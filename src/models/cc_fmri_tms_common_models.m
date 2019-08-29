@@ -1,16 +1,17 @@
 function [Shat tmsShat] = cc_fmri_tms_common_models()
     
     DATADIR=['/Volumes/MACBOOKUSB/Datasets/' ...
-                    'tms-fMRI/CC/roitimeseries'];
+                    'tms-fMRI/CC/SchaeferYeo100/nuisance_4P+6P+6acompcor'];
     %DATADIR = fullfile('data','interim','CC','roitimeseries');    
-    
+    %DATADIR=fullfile('~/Downloads','partialcorr_conductance')
+
     methodname = 'corr';            
     SAVEDIR=fullfile(DATADIR,'ggms',['networktype_' methodname]);
     mkdir(SAVEDIR);
     ggm_results = struct();
     
     tms_filenames = dir(fullfile(SAVEDIR,'*ggms*.mat'));
-    tms_filenames = {tms_filenames.name};
+    tms_filenames = {tms_filenames.name}
     nconditions = length(tms_filenames);
 
     tmsShat = [];
