@@ -23,6 +23,10 @@ function run_networkqc()
             
             network = compute_correlation(data.X{ii},opts);
             
+			% plot network matrix
+			
+			
+			% Collect bilateral and partitioning metrics
             bilateral_metrics = compute_interhemispheric_agreement(network,opts);
             
             partitioning_metrics = compute_partitioning_score(network,opts);
@@ -105,7 +109,7 @@ function partition_metrics = compute_partitioning_score(network,opts)
         for jj=1:ii
             cut_matrix(ii,jj) = sum(sum(abs(network(opts.Ci==ii,opts.Ci==jj))));
             if(jj<ii)
-                ratio_matrix(ii,jj) = cut_matrix(ii,jj)/(size_matrix(ii)*size_matrix(jj));
+                ratio_matrix(ii,jj) = cut_matrix(ii,jj)/(size_matrix(ii)*(size_matrix(jj)-1));
                 conductance_matrix(ii,jj) = cut_matrix(ii,jj)/min(cut_matrix(ii,ii),cut_matrix(jj,jj));
             end
         end
