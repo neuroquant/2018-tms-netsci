@@ -48,7 +48,7 @@ SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects_missing.txt)
 ## Find missing subjects from ica list
 # grep -v -F -f  LpMFG_ica.txt LpMFG_bids.txt > LpMFG_missing.txt
 # SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" LpMFG_missing.txt)
-TASKID=(monetaryincentivedelay)
+TASKID=(monetaryincentivedelay multisourceinterference rest)
 # multisourceinterference
 TASK_TMS=(singlepulseLaMFG)
 # singlepulseLaMFG singlepulseLFp singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp
@@ -103,7 +103,7 @@ do
     
     CMD_OPTS="${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
             --participant_label ${sub} \
-            -t ${TASKID} \
+            -t ${TASKID[@]} \
             --bold2t1w-dof ${BOLD2T1DOF} \
             --use-aroma --aroma-melodic-dimensionality -100 \
             --ignore-aroma-denoising-errors \
@@ -121,7 +121,7 @@ do
     ##--------
         singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
             --participant_label ${sub} \
-            -t ${TASKID} \
+            -t ${TASKID[@]} \
             --bold2t1w-dof ${BOLD2T1DOF} \
             --use-aroma --aroma-melodic-dimensionality -100 \
             --ignore-aroma-denoising-errors \
