@@ -44,12 +44,12 @@ FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
 # Preprocessing Options #
 #########################
 #SLURM_ARRAY_TASK_ID=1
-SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ../00-bidsify/subjects_missing.txt)
+SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" msit_missing.txt)
 ## Find missing subjects from ica list
 # grep -v -F -f  LpMFG_ica.txt LpMFG_bids.txt > LpMFG_missing.txt
 # SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" LpMFG_missing.txt)
-TASKID=(rest)
-# multisourceinterference monetaryincentivedelay multisourceinterference
+TASKID=(multisourceinterference)
+# multisourceinterference monetaryincentivedelay rest
 TASK_TMS=(singlepulseLaMFG)
 # singlepulseLaMFG singlepulseLFp singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp
 # singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp
@@ -121,6 +121,7 @@ do
     ##--------
         singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
             --participant_label ${sub} \
+	        -t "${TASKID[@]}" \
             --bold2t1w-dof ${BOLD2T1DOF} \
             --use-aroma --aroma-melodic-dimensionality -100 \
             --ignore-aroma-denoising-errors \
