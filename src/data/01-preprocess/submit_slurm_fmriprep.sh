@@ -4,12 +4,18 @@
 # Sept 17 we had to run 16, 35 and 37. The 206x seem to be particularly failing due to mixed July runs?
 
 #for sub in ${SUBID[@]}
-for sub in $(seq 1 14)
+for sub in $(seq 1 4)
 do
-   sbatch -p aetkin,normal,owners --array=$sub -N 1 -n 16 --mem=64000 -t 8:00:00 --begin=now run_fmriprep.sh
+   sbatch -p aetkin,owners,normal --array=$sub -N 1 -n 16 --mem=64000 -t 10:00:00 run_fmriprep.sh
    # now+${sub}minute
    #sbatch -p aetkin,owners,normal --array=$sub -N 1 -n 16 --mem=64000 -t 4:00:00 --begin=now run_fmriprep.sh
 
    # 6 hours was enough to complete freesurfer and T1w processing but not the rest. 
-   # sbatch -p aetkin,owners,normal --array=$sub -N 1 -n 16 --mem=64000 -t 4:00:00 --begin=now+9hour run_fmriprep.sh
+   sbatch -p aetkin,owners,normal --array=$sub -N 1 -n 16 --mem=64000 -t 4:00:00 --begin=now+9hour run_fmriprep.sh
 done
+
+## Useful to update jobs
+## update partition
+# scontrol update JobID=5278[2973-3071] Partition=owners,normal,aetkin
+## update wall time
+# scontrol update JobID=5278[3001-3071] TimeLimit=05:00:00

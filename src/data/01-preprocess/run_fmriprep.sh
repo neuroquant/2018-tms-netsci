@@ -44,13 +44,14 @@ FPREP_IMG=${PI_HOME}/singularity_images/bids-fmriprep-1.2.3_latest.sif
 # Preprocessing Options #
 #########################
 #SLURM_ARRAY_TASK_ID=1
-SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" msit_missing.txt)
+SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" subjects_missing.txt)
+#SUBID=(NTHC1061)
 ## Find missing subjects from ica list
 # grep -v -F -f  LpMFG_ica.txt LpMFG_bids.txt > LpMFG_missing.txt
 # SUBID=$(sed "${SLURM_ARRAY_TASK_ID}q;d" LpMFG_missing.txt)
-TASKID=(multisourceinterference)
+# TASKID=(rest)
 # multisourceinterference monetaryincentivedelay rest
-TASK_TMS=(singlepulseLaMFG)
+# TASK_TMS=(singlepulseLaMFG)
 # singlepulseLaMFG singlepulseLFp singlepulseLIFGAnat singlepulseLIFGBLA singlepulseLpMFG singlepulseLVmFp
 # singlepulseRaMFG singlepulseRFp singlepulseRIFGAnat singlepulseRIFGBLA singlepulseRpMFG singlepulseRVmFp
 # singlepulseRFEF singlepulseRIPL singlepulseRIFJ singlepulseRM1 singlepulseRpreSMA
@@ -103,7 +104,7 @@ do
     
     CMD_OPTS="${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
             --participant_label ${sub} \
-            -t "${TASKID[@]}" \
+            -t "${TASKID[@]}" (All tasks) \
             --bold2t1w-dof ${BOLD2T1DOF} \
             --use-aroma --aroma-melodic-dimensionality -100 \
             --ignore-aroma-denoising-errors \
@@ -121,7 +122,6 @@ do
     ##--------
         singularity run ${FPREP_IMG}  ${BIDSDIR} ${OUTPUTDIR} participant \
             --participant_label ${sub} \
-	        -t "${TASKID[@]}" \
             --bold2t1w-dof ${BOLD2T1DOF} \
             --use-aroma --aroma-melodic-dimensionality -100 \
             --ignore-aroma-denoising-errors \
