@@ -16,6 +16,8 @@ all_conditions = regexprep({all_conditions.name},{'task-','_bold.json'},{'',''})
 
 % Schaefer100_Yeo7
 
+%all_conditions = {'singlepulseRaMFG'};
+
 for conditionno=1:length(all_conditions)
     if(conditionno<=3)
         condition = ['ses-d1_task-' all_conditions{conditionno}];

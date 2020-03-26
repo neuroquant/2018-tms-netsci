@@ -23,7 +23,7 @@ function run_networkqc()
 	tasks = regexprep(tasks,{'collect_roitimeseries_','\n','ses-d1_','ses-d2_'},{'','','',''});
 	tasks = tasks(1:end-1);
 	
-	for tt=17:length(tasks)
+	for tt=4:length(tasks)
 		% save qc outputs in 
 		opts.savedir = fullfile(pwd,'reports/qc/networks',tasks{tt});
 		mkdir(opts.savedir)

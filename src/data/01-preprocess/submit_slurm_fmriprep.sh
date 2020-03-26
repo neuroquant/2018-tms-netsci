@@ -4,7 +4,7 @@
 # Sept 17 we had to run 16, 35 and 37. The 206x seem to be particularly failing due to mixed July runs?
 
 #for sub in ${SUBID[@]}
-for sub in $(seq 1 4)
+for sub in $(seq 4 24)
 do
    sbatch -p aetkin,owners,normal --array=$sub -N 1 -n 16 --mem=64000 -t 10:00:00 run_fmriprep.sh
    # now+${sub}minute

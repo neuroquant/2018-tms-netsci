@@ -7,5 +7,8 @@ export CONFOUND_DIR=${BASEDIR}/derivatives/fmriprep-fsl/confound
 
 mkdir -p ${CONFOUND_DIR}
 
-cp ${DERIVATIVES}/sub-*/ses-*/func/*.tsv ${CONFOUND_DIR}/.
-cp ${DERIVATIVES}/sub-*/ses-*/func/*.csv ${CONFOUND_DIR}/.
+# rsync --update --list-only ${DERIVATIVES}/sub-*/ses-*/func/*.tsv ${CONFOUND_DIR}/.
+rsync --update ${DERIVATIVES}/sub-*/ses-*/func/*.tsv ${CONFOUND_DIR}/.
+
+#cp ${DERIVATIVES}/sub-*/ses-*/func/*.tsv ${CONFOUND_DIR}/.
+#cp ${DERIVATIVES}/sub-*/ses-*/func/*.csv ${CONFOUND_DIR}/.

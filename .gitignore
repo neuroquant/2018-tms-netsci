@@ -82,3 +82,6 @@ target/
 
 # Mac OS-specific storage files
 .DS_Store
+
+# Cluster job outputs
+*.out

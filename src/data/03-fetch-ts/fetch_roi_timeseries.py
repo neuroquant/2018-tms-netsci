@@ -66,6 +66,17 @@ for key in keys:
     #  Gordon, Schaefer, Buckner atlas #
     #####################################
 
+    # SchaeferYeo2019/MNI/Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_200Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_300Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_400Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_500Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_600Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_700Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_800Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_900Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+    # SchaeferYeo2019/MNI/Schaefer2018_1000Parcels_7Networks_order_FSLMNI152_2mm.nii.gz
+
     atlasfile = os.path.join(os.environ.get("PI_HOME"),"resources",
              'SchaeferYeo2018/MNI/Schaefer2018_200Parcels_7Networks_order_FSLMNI152_2mm.nii.gz')
     atlasfile2 = os.path.join(os.environ.get("PI_HOME"),"resources",
